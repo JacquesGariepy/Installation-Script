@@ -1,5 +1,5 @@
 # Script powershell d'installation d'un nouveau poste
-Script powershell d'installation d'un nouveau poste
+Installation des applications, des extensions pour Visual Studio 2022, VSCode et Chrome
 			
 - S'assurer que l'installateur d'applications (winget) est présent sur le poste : https://www.microsoft.com/fr-ca/p/app-installer/9nblggh4nns1?rtc=1#activetab=pivot:overviewtab
 
@@ -12,8 +12,6 @@ Script powershell d'installation d'un nouveau poste
 - Installer les extensions VS Code (insider et stable). Ouvrir "powershell ise" en mode admin. Assurez-vous que VS Code (insider et stable) est fermé. Lancer le script "install_vscode_extensions.ps1"
 	- Si vous désirez ajouter des extensions, il suffit de copier le nom du composant, dans la liste "AdditionalExtensions" du script "install_vscode_extensions.ps1". 
 	  Exemple d'ajout d'un extension dans le script : [string[]]$AdditionalExtensions = @("aaron-bond.better-comments","Angular.ng-template",...
-	
-- Installation du certificat CA. Dans VSCode effectuer un  npm config set cafile "H:\ZScaler Root CA.pem"
 
 - Installer les extensions Visual Studio 2022. Ouvrir "powershell ise" en mode admin. Assurez-vous que Visual Studio est fermé. Lancer le script "install_visualstudio_extensions.ps1"
 	- Si vous désirez ajouter des extensions, il suffit de copier le nom du composant dans le script "install_visualstudio_extensions.ps1". Le nom du composant est trouvé dans l'url du Marketplace, après le paramêtre "itemName=". Ex.: VisualStudioPlatformTeam.ProductivityPowerPack2022 dans "https://marketplace.visualstudio.com/items?itemName=VisualStudioPlatformTeam.ProductivityPowerPack2022" 
