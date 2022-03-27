@@ -1,5 +1,5 @@
 # Script powershell d'installation d'un nouveau poste
-Installation des applications, des extensions pour Visual Studio 2022, VSCode et Chrome
+Installation des applications et des extensions pour Visual Studio 2022, VSCode et Chrome
 			
 - S'assurer que l'installateur d'applications (winget) est présent sur le poste : https://www.microsoft.com/fr-ca/p/app-installer/9nblggh4nns1?rtc=1#activetab=pivot:overviewtab
 
