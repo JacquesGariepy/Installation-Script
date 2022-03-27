@@ -1,6 +1,10 @@
 # Script powershell d'installation d'un nouveau poste
 Installation des applications et des extensions pour Visual Studio 2022, VSCode et Chrome
-			
+
+- Config Windows : - Dans Options des dossiers : - selectionner "Afficher les fichiers, dossier et lecteurs cachés"
+						- décocher "Masquer les extensions des fichiers dont le type est connu"
+		   - Activer le mode developpeur windows : https://docs.microsoft.com/fr-fr/windows/apps/get-started/enable-your-device-for-development
+
 - S'assurer que l'installateur d'applications (winget) est présent sur le poste : https://www.microsoft.com/fr-ca/p/app-installer/9nblggh4nns1?rtc=1#activetab=pivot:overviewtab
 
 - Installation des applications. Ouvrir une console en mode admin et lancer le fichier de commande "install_applications.cmd"
@@ -34,10 +38,3 @@ Installation des applications et des extensions pour Visual Studio 2022, VSCode 
 	
 **pas encore dispo en 2022
 https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftAnalysisServicesModelingProjects
-
-
-Config Windows : 
-					- Dans Options des dossiers : - selectionner "Afficher les fichiers, dossier et lecteurs cachés"
-												  - décocher "Masquer les extensions des fichiers dont le type est connu"
-							
-					- Activer le mode developpeur windows
