@@ -1,5 +1,5 @@
-# InstallScript
-Install Script
+# Script powershell d'installation d'un nouveau poste
+Script powershell d'installation d'un nouveau poste
 			
 - S'assurer que l'installateur d'applications (winget) est présent sur le poste : https://www.microsoft.com/fr-ca/p/app-installer/9nblggh4nns1?rtc=1#activetab=pivot:overviewtab
 
