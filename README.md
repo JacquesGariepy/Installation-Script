@@ -7,7 +7,7 @@ Installation des applications et des extensions pour Visual Studio 2022, VSCode 
 
 - S'assurer que l'installateur d'applications (winget) est présent sur le poste : https://www.microsoft.com/fr-ca/p/app-installer/9nblggh4nns1?rtc=1#activetab=pivot:overviewtab
 
-- Installation des applications. Ouvrir une console en mode admin et lancer le fichier de commande "install_applications.cmd"
+- Installation des applications. Ouvrir "powershell ise" en mode admin. Lancer le script  "install_applications.cmd"
 	- Si vous désirez ajouter des extensions, il suffit de copier la commande winget du composant dans "install_applications.ps1". La commande peut etre trouvé ici https://winget.run/
 	- Pour les options de winget https://docs.microsoft.com/en-us/windows/package-manager/winget/
 
