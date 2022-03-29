@@ -38,7 +38,6 @@ Installation des applications et des extensions pour Visual Studio 2022, VSCode 
 - Si erreur lors de l'installation via winget de winscp, car package vient de sourceforge et source est bloqué https://winscp.net/eng/download.php
 - https://wixtoolset.org/releases/
 - https://download.sysinternals.com/files/SysinternalsSuite.zip
-
 	
 ### Installation d'extensions  pas encore dispo en 2022
 https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftAnalysisServicesModelingProjects
