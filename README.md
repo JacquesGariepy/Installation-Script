@@ -41,3 +41,5 @@ Installation des applications et des extensions pour Visual Studio 2022, VSCode 
 	
 ### Installation d'extensions pas encore disponible en 2022
 https://marketplace.visualstudio.com/items?itemName=ProBITools.MicrosoftAnalysisServicesModelingProjects
+
+- Commende git
