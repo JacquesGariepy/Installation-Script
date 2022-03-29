@@ -59,3 +59,18 @@ winget install -e -h --id 7zip.7zip --force --accept-source-agreements
 winget install -e -h --id Adobe.Acrobat.Reader.64-bit --force --accept-source-agreements
 winget install -e -h --id Microsoft.PowerToys --force --accept-source-agreements
 winget install -e -h --id WinSCP.WinSCP --force --accept-source-agreements
+
+$confirmation = Read-Host "Installation Visual Studio 2022 Extensions (y/n)"
+if ($confirmation -eq 'y') {
+  $DownloadAndInstall= $PSScriptRoot+"\VisualStudio2022\install_visualstudio_extensions.ps1"  
+}
+
+$confirmation = Read-Host "Installation VSCode Extensions (y/n)"
+if ($confirmation -eq 'y') {
+    $DownloadAndInstall= $PSScriptRoot+"\VS Code\install_vscode_extensions.ps1"
+}
+
+$confirmation = Read-Host "Installation Chrome Extensions (y/n)"
+if ($confirmation -eq 'y') {
+    $DownloadAndInstall= $PSScriptRoot+"\Chrome\install_chrome_extensions.ps1"
+}
