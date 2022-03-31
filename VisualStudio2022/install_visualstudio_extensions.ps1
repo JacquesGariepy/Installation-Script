@@ -1,3 +1,4 @@
+           
 $DownloadAndInstall= $PSScriptRoot+"\_install_script.ps1"
 
 & $DownloadAndInstall -PackageName "MadsKristensen.NpmTaskRunner64" "/q /a"
