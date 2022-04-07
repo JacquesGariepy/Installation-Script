@@ -1,3 +1,6 @@
+set-executionpolicy unrestricted
+Write-Host "Autoriser l’exécution de scripts PowerShell. Si powershell avait une restriction préalable, veuillez relancer ce script." -ForegroundColor Yellow
+
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 Write-Host "Installation" -ForegroundColor Yellow
 
