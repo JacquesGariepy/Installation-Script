@@ -37,8 +37,9 @@ param(
 	"VisualStudioExptTeam.vscodeintellicode",
 	"yzhang.markdown-all-in-one",
 	"ms-mssql.mssql",
-    "esbenp.prettier-vscode",
-    "ms-vscode.powershell"),
+    	"esbenp.prettier-vscode",
+    	"ms-vscode.powershell",
+    	"ms-vscode.live-server"),
 
     [switch]$LaunchWhenDone
 )
