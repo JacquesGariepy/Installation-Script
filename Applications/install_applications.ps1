@@ -57,3 +57,4 @@ winget install -e -h --id 7zip.7zip --force --accept-source-agreements
 winget install -e -h --id Adobe.Acrobat.Reader.64-bit --force --accept-source-agreements
 winget install -e -h --id Microsoft.PowerToys --force --accept-source-agreements
 winget install -e -h --id WinSCP.WinSCP --force --accept-source-agreements
+winget install -e -h --id Greenshot.Greenshot --accept-source-agreements
