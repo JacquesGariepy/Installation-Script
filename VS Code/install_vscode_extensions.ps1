@@ -14,7 +14,6 @@ param(
     [ValidateNotNull()]
     [string[]]$AdditionalExtensions = @(
     "aaron-bond.better-comments",
-	"Angular.ng-template",
 	"anteprimorac.html-end-tag-labels",
 	"DavidAnson.vscode-markdownlint",
 	"dbaeumer.vscode-eslint",
@@ -25,8 +24,6 @@ param(
 	"formulahendry.auto-rename-tag",
 	"GitHub.copilot",
 	"GitHub.vscode-pull-request-github",
-	"johnpapa.angular-essentials",
-	"johnpapa.Angular2",
 	"johnpapa.vscode-peacock",
 	"johnpapa.winteriscoming",
 	"ms-dotnettools.csharp",
