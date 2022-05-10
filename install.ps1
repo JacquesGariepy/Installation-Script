@@ -14,9 +14,14 @@ if ($confirmation -eq 'y') {
   &"$PSScriptRoot\VisualStudio2022\install_visualstudio_extensions.ps1"  
 }
 
-$confirmation = Read-Host "Installation VSCode Extensions (y/n)"
+$confirmation = Read-Host "Installation VSCode Angular Extensions (y/n)"
 if ($confirmation -eq 'y') {
-  &"$PSScriptRoot\VS Code\install_vscode_extensions.ps1"
+  &"$PSScriptRoot\VS Code\install_vscode_angular_extensions.ps1"
+}
+
+$confirmation = Read-Host "Installation VSCode React & React Native Extensions (y/n)"
+if ($confirmation -eq 'y') {
+  &"$PSScriptRoot\VS Code\install_vscode_react_extensions.ps1"
 }
 
 $confirmation = Read-Host "Installation Chrome Extensions (y/n)"
