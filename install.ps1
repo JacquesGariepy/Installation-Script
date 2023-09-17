@@ -1,6 +1,6 @@
 # Set the execution policy
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-Write-Host "Autoriser l’exécution de scripts PowerShell. Si PowerShell avait une restriction préalable, veuillez relancer ce script." -ForegroundColor Yellow
+Write-Host "Allow the execution of PowerShell scripts. If PowerShell had a prior restriction, please rerun this script." -ForegroundColor Yellow
 
 # Function to prompt and run scripts
 function RunScript($promptMessage, $scriptPath) {
