@@ -1,43 +1,66 @@
-﻿param([String] $PackageName, $Arguments)
- 
-$ErrorActionPreference = "Stop"
- 
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$PackageName,
+
+    [Parameter(Mandatory=$false)]
+    [string]$Arguments
+)
+
+# Set constants
 $baseProtocol = "https:"
 $baseHostName = "marketplace.visualstudio.com"
- 
-$Uri = "$($baseProtocol)//$($baseHostName)/items?itemName=$($PackageName)"
-$VsixLocation = "$($env:Temp)\$([guid]::NewGuid()).vsix"
- 
 $VSInstallDir = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service"
- 
-if (-Not $VSInstallDir) {
-  Write-Error "Visual Studio InstallDir registry key missing"
-  Exit 1
-}
- 
-Write-Host "Installation VSIX extension $($PackageName)" -ForegroundColor Yellow
-$HTML = Invoke-WebRequest -Uri $Uri -UseBasicParsing -SessionVariable session
- 
-Write-Host "Attempting to download"
-$anchor = $HTML.Links |
-Where-Object { $_.class -eq 'install-button-container' } |
-Select-Object -ExpandProperty href
 
-if (-Not $anchor) {
-  Write-Error "Could not find download anchor tag on the Visual Studio Extensions page"
-  Exit 1
-}
-$href = "$($baseProtocol)//$($baseHostName)$($anchor)"
-Invoke-WebRequest $href -OutFile $VsixLocation -WebSession $session
- 
-if (-Not (Test-Path $VsixLocation)) {
-  Write-Error "Downloaded VSIX file could not be located"
-  Exit 1
+# Set error action preference
+$ErrorActionPreference = "Stop"
+
+function Download-VSIX {
+    $Uri = "$baseProtocol//$baseHostName/items?itemName=$PackageName"
+    $VsixLocation = Join-Path $env:Temp "$([guid]::NewGuid()).vsix"
+
+    Write-Verbose "Fetching VSIX extension from $Uri"
+    $HTML = Invoke-WebRequest -Uri $Uri -UseBasicParsing -SessionVariable session
+
+    $anchor = $HTML.Links | Where-Object { $_.class -eq 'install-button-container' } | Select-Object -ExpandProperty href
+
+    if (-not $anchor) {
+        throw "Could not find download anchor tag on the Visual Studio Extensions page"
+    }
+
+    $href = "$baseProtocol//$baseHostName$anchor"
+    Invoke-WebRequest $href -OutFile $VsixLocation -WebSession $session
+
+    if (-not (Test-Path $VsixLocation)) {
+        throw "Downloaded VSIX file could not be located"
+    }
+
+    return $VsixLocation
 }
 
-Write-Host "Installing extensions..."
-Start-Process -Filepath "$($VSInstallDir)\VSIXInstaller" -ArgumentList "$($Arguments) $($VsixLocation)" -Wait
- 
-rm $VsixLocation
- 
-Write-Host "Installation of $($PackageName) complete! `n`n" -ForegroundColor Green
+function Install-VSIX {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$VsixLocation
+    )
+
+    if (-not (Test-Path $VSInstallDir)) {
+        throw "Visual Studio InstallDir does not exist"
+    }
+
+    Write-Verbose "Installing extensions..."
+    Start-Process -Filepath (Join-Path $VSInstallDir "VSIXInstaller") -ArgumentList "$Arguments $VsixLocation" -Wait
+
+    Remove-Item $VsixLocation -Force
+}
+
+try {
+    Write-Host "Starting installation of VSIX extension $PackageName" -ForegroundColor Yellow
+    $VsixLocation = Download-VSIX
+    Install-VSIX -VsixLocation $VsixLocation
+    Write-Host "Installation of $PackageName complete!" -ForegroundColor Green
+}
+catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}
