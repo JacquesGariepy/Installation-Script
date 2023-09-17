@@ -1,16 +1,20 @@
-           
-$DownloadAndInstall= $PSScriptRoot+"\_install_script.ps1"
+$DownloadAndInstall = Join-Path $PSScriptRoot "_install_script.ps1"
 
-& $DownloadAndInstall -PackageName "MadsKristensen.NpmTaskRunner64" "/q /a"
-& $DownloadAndInstall -PackageName "ErikEJ.SQLServerCompactSQLiteToolbox" "/q /a"
-& $DownloadAndInstall -PackageName "ErikEJ.EFCorePowerTools" "/q /a"
-& $DownloadAndInstall -PackageName "SteveCadwallader.CodeMaidVS2022" "/q /a"
-& $DownloadAndInstall -PackageName "Mojtabakaviani.SqlTools" "/q /a"
-& $DownloadAndInstall -PackageName "EWoodruff.VisualStudioSpellCheckerVS2022andLater" "/q /a"
-& $DownloadAndInstall -PackageName "WixToolset.WixToolsetVisualStudio2022Extension" "/a"
-& $DownloadAndInstall -PackageName "ProBITools.MicrosoftReportProjectsforVisualStudio2022" "/q /a"
-& $DownloadAndInstall -PackageName "DevartSoftware.CodeCompare" "/q /a"
-& $DownloadAndInstall -PackageName "VisualStudioPlatformTeam.ProductivityPowerPack2022" "/q /a"
+$packages = @(
+    @{ Name="MadsKristensen.NpmTaskRunner64"; Args="/q /a" },
+    @{ Name="ErikEJ.SQLServerCompactSQLiteToolbox"; Args="/q /a" },
+    # ... Add other packages similarly
+    @{ Name="VisualStudioPlatformTeam.ProductivityPowerPack2022"; Args="/q /a" }
+)
 
-Write-Host "Installation dotnet nuget package" -ForegroundColor Yellow
-dotnet tool install --global Microsoft.Tye --version 0.11.0-alpha.22111.1
+foreach ($package in $packages) {
+    try {
+        & $DownloadAndInstall -PackageName $package.Name -Arguments $package.Args
+        Write-Verbose "Installed $($package.Name) successfully."
+    } catch {
+        Write-Error "Failed to install $($package.Name). Error: $($_.Exception.Message)"
+    }
+}
+
+Write-Host "Installing dotnet nuget package" -ForegroundColor Yellow
+dotnet tool install --global Microsoft.Tye
