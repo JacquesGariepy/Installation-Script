@@ -1,3 +1,23 @@
+if (Get-Command winget -ErrorAction SilentlyContinue) {
+    Write-Output "winget is already installed."
+} else {
+    Write-Output "winget is not installed. Installing now..."
+    # Get the current Windows version
+    $WindowsVersion = [System.Environment]::OSVersion.Version
+    
+    # Check if the major version is 10 for Windows 10
+    if ($WindowsVersion.Major -eq 10) {
+        Write-Output "Detected Windows 10. Registering winget..."
+    
+        # Register winget
+        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
+    
+        Write-Output "winget registration attempted."
+    } else {
+        Start-Process "ms-windows-store://pdp/?PFN=Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+    }
+}
+
 # Terminal
 winget install -e -h --id Microsoft.PowerShell.Preview --force --accept-source-agreements
 winget install -e -h --id Microsoft.WindowsTerminal.Preview --force --accept-source-agreements
