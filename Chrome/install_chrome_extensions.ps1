@@ -32,6 +32,7 @@ $extensions = @{
     "HARPA AI" = "eanggfilgoajaocelnaflolkadkeghjp";
     "ChatGPT LINER" = "bmhcbmnbenmcecpmpepghooflbehcack";
     "AI Prompt Genius" = "jjdnakkfjnnbbckhifcfchagnpofjffo";
+    "OneTab" = "chphlpgkkbolifaimnlloiipkdnihall";
     # "" = "";
 }
 
