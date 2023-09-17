@@ -23,7 +23,16 @@ $extensions = @{
     "Clear Cache" = "cppjkneekbjaeellbfkmgnhonkkjfpdn";
     "HTML Validator" = "mpbelhhnfhfjnaehkcnnaknldmnocglk";
     "JSON Viewer" = "gbmdgpbipfallnflgajpaliibnhdgobh";
-    # Add more extensions here as needed
+    "AIPRM" = "ojnbohmppadfgpejeebfnmnknjdlckgj";
+    "ChatGPT for Google" = "jgjaeacdkonaoafenlfkkkmbaopkbilf";
+    "Google Traduction" = "aapbdbdomjkkjkaonfhkkikfgjllcleb";
+    "ReaderGPT" = "ohgodjgnfedgikkgcjdkomkadbfedcjd";
+    "WebChatGPT" = "lpfemeioodjbpieminkklglpmhlngfcn";
+    "Superpower ChatGPT" = "amhmeenmapldpjdedekalnfifgnpfnkc";
+    "HARPA AI" = "eanggfilgoajaocelnaflolkadkeghjp";
+    "ChatGPT LINER" = "bmhcbmnbenmcecpmpepghooflbehcack";
+    "AI Prompt Genius" = "jjdnakkfjnnbbckhifcfchagnpofjffo";
+    # "" = "";
 }
 
 # Install each extension
