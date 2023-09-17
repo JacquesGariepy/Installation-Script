@@ -1,5 +1,5 @@
 # Constants
-WINGET_OPTIONS="-e -h --force --accept-source-agreements"
+$WINGET_OPTIONS="-e -h --force --accept-source-agreements"
 
 # Terminal
 winget install $WINGET_OPTIONS --id Microsoft.PowerShell.Preview
