@@ -1,59 +1,60 @@
-# Constants
-$WINGET_OPTIONS="-e -h --force --accept-source-agreements"
-
 # Terminal
-winget install $WINGET_OPTIONS --id Microsoft.PowerShell.Preview
-winget install $WINGET_OPTIONS --id Microsoft.WindowsTerminal.Preview
-winget install $WINGET_OPTIONS --id JanDeDobbeleer.OhMyPosh
+winget install -e -h --id Microsoft.PowerShell.Preview --force --accept-source-agreements
+winget install -e -h --id Microsoft.WindowsTerminal.Preview --force --accept-source-agreements
+winget install -e -h --id JanDeDobbeleer.OhMyPosh --force --accept-source-agreements
 
 # Browsers
-winget install $WINGET_OPTIONS --id Google.Chrome
-winget install $WINGET_OPTIONS --id Google.Chrome.Dev
-winget install $WINGET_OPTIONS --id Google.Chrome.Beta
-winget install $WINGET_OPTIONS --id Mozilla.Firefox
-winget install $WINGET_OPTIONS --id Mozilla.Firefox.DeveloperEdition
-winget install $WINGET_OPTIONS --id Microsoft.Edge.Beta
-winget install $WINGET_OPTIONS --id BraveSoftware.BraveBrowser
+winget install -e -h --id Google.Chrome --force --accept-source-agreements
+winget install -e -h --id Google.Chrome.Dev --force --accept-source-agreements
+winget install -e -h --id Google.Chrome.Beta --force --accept-source-agreements
+winget install -e -h --id Mozilla.Firefox --force --accept-source-agreements
+winget install -e -h --id Mozilla.Firefox.DeveloperEdition --force --accept-source-agreements
+winget install -e -h --id Microsoft.Edge.Beta --force --accept-source-agreements
+winget install -e -h --id BraveSoftware.BraveBrowser --force --accept-source-agreements  # Additional: Brave Browser
 
 # IDEs
-winget install $WINGET_OPTIONS -i --id Microsoft.VisualStudio.2022.Enterprise-Preview
-winget install $WINGET_OPTIONS --id Microsoft.VisualStudioCode
-winget install $WINGET_OPTIONS --id Microsoft.VisualStudioCode.Insiders
-winget install $WINGET_OPTIONS --id Notepad++.Notepad++
-winget install $WINGET_OPTIONS --id JetBrains.PyCharm
+winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise-Preview --force --accept-source-agreements
+winget install -e -h --id Microsoft.VisualStudioCode --force --accept-source-agreements
+winget install -e -h --id Microsoft.VisualStudioCode.Insiders --force --accept-source-agreements
+winget install -e -h --id Notepad++.Notepad++ --force --accept-source-agreements
+winget install -e -h --id JetBrains.PyCharm --force --accept-source-agreements  # Additional: PyCharm for Python Development
 
 # Frameworks
-winget install $WINGET_OPTIONS --id Microsoft.dotnet
-winget install $WINGET_OPTIONS --id OpenJS.NodeJS
-winget install $WINGET_OPTIONS --id Yarn.Yarn
+winget install -e -h --id Microsoft.dotnet --force --accept-source-agreements
+winget install -e -h --id OpenJS.NodeJS --force --accept-source-agreements
+winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
-winget install $WINGET_OPTIONS --id Python.Python.3
-winget install $WINGET_OPTIONS --id Anaconda.Anaconda3
+winget install -e -h --id Python.Python.3 --force --accept-source-agreements
+winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements  # Additional: Anaconda for Data Science
 
 # Git
-winget install $WINGET_OPTIONS -i --id Git.Git
-winget install $WINGET_OPTIONS --id GitHub.GitLFS
-winget install $WINGET_OPTIONS --id GitHub.cli
-winget install $WINGET_OPTIONS --id Axosoft.GitKraken
+winget install -e -i --id Git.Git --force --accept-source-agreements
+winget install -e -h --id GitHub.GitLFS --force --accept-source-agreements
+winget install -e -h --id GitHub.cli --force --accept-source-agreements
+winget install -e -h --id Axosoft.GitKraken --force --accept-source-agreements
 
 # Database
-winget install $WINGET_OPTIONS -i --id Microsoft.AzureDataStudio.Insiders
-winget install $WINGET_OPTIONS -i --id Microsoft.SQLServer.2019.Developer
-winget install $WINGET_OPTIONS -i --id Microsoft.SQLServerManagementStudio
-winget install $WINGET_OPTIONS --id MongoDB.MongoDB
+winget install -e -i --id Microsoft.AzureDataStudio.Insiders --force --accept-source-agreements
+winget install -e -i --id Microsoft.SQLServer.2019.Developer --force --accept-source-agreements
+winget install -e -i --id Microsoft.SQLServerManagementStudio --force --accept-source-agreements
+winget install -e -h --id MongoDB.MongoDB --force --accept-source-agreements  # Additional: MongoDB
 
 # Tools
-winget install $WINGET_OPTIONS --id Docker.DockerDesktop
-winget install $WINGET_OPTIONS --id Microsoft.PowerBI
-winget install $WINGET_OPTIONS --id Telerik.Fiddler
-winget install $WINGET_OPTIONS --id JetBrains.ReSharper
-winget install $WINGET_OPTIONS --id JetBrains.Rider
-winget install $WINGET_OPTIONS --id JetBrains.WebStorm
-winget install $WINGET_OPTIONS --id JetBrains.DataGrip
-winget install $WINGET_OPTIONS --id Postman.Postman
+winget install -e -h --id Docker.DockerDesktop --force --accept-source-agreements
+winget install -e -h --id Microsoft.PowerBI  --force --accept-source-agreements
+winget install -e -h --id Telerik.Fiddler --force --accept-source-agreements
+winget install -e -h --id JetBrains.ReSharper --force --accept-source-agreements
+winget install -e -h --id JetBrains.Rider --force --accept-source-agreements
+winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
+winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
+winget install -e -h --id Postman.Postman --force --accept-source-agreements  # Additional: Postman for API Testing
 
 # Azure
-winget install $WINGET_OPTIONS --id Microsoft.AzureDataStudio
-winget install $WINGET_OPTIONS --id Microsoft.AzureStorageExplorer
-winget install $WINGET_OPTIONS --id Microsoft.AzureCLI
+winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
+winget install -e -h --id Microsoft.AzureStorageExplorer --force --accept-source-agreements
+winget install -e -h --id Microsoft.AzureCLI --force --accept-source-agreements
+
+winget install -e -h --id Oracle.VirtualBox --force --accept-source-agreements 
+
+winget install -e -h --id AllroundAutomations.PLSQLDeveloper -force --accept-source-agreements
