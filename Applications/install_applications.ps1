@@ -38,6 +38,7 @@ winget install -e -h --id Microsoft.VisualStudioCode --force --accept-source-agr
 winget install -e -h --id Microsoft.VisualStudioCode.Insiders --force --accept-source-agreements
 winget install -e -h --id Notepad++.Notepad++ --force --accept-source-agreements
 winget install -e -h --id JetBrains.PyCharm --force --accept-source-agreements  # Additional: PyCharm for Python Development
+winget install -e -h --id WinMerge.WinMerge --force --accept-source-agreements 
 
 # Frameworks
 winget install -e -h --id Microsoft.dotnet --force --accept-source-agreements
@@ -59,6 +60,7 @@ winget install -e -i --id Microsoft.AzureDataStudio.Insiders --force --accept-so
 winget install -e -i --id Microsoft.SQLServer.2019.Developer --force --accept-source-agreements
 winget install -e -i --id Microsoft.SQLServerManagementStudio --force --accept-source-agreements
 winget install -e -h --id MongoDB.MongoDB --force --accept-source-agreements  # Additional: MongoDB
+winget install -e -h --id AllroundAutomations.PLSQLDeveloper -force --accept-source-agreements
 
 # Tools
 winget install -e -h --id Docker.DockerDesktop --force --accept-source-agreements
@@ -76,6 +78,7 @@ winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agre
 winget install -e -h --id Microsoft.AzureStorageExplorer --force --accept-source-agreements
 winget install -e -h --id Microsoft.AzureCLI --force --accept-source-agreements
 
+#VM
 winget install -e -h --id Oracle.VirtualBox --force --accept-source-agreements 
 
-winget install -e -h --id AllroundAutomations.PLSQLDeveloper -force --accept-source-agreements
+
