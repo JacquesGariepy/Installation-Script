@@ -69,6 +69,7 @@ winget install -e -h --id JetBrains.Rider --force --accept-source-agreements
 winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
 winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
 winget install -e -h --id Postman.Postman --force --accept-source-agreements  # Additional: Postman for API Testing
+winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
