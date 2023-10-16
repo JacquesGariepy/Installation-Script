@@ -17,5 +17,6 @@ RunScript "Installation VSCode Extensions (y/n)" "VS Code\install_vscode_extensi
 RunScript "Installation VSCode Angular Extensions (y/n)" "VS Code\install_vscode_angular_extensions.ps1"
 RunScript "Installation VSCode React & React Native Extensions (y/n)" "VS Code\install_vscode_react_extensions.ps1"
 RunScript "Installation Chrome Extensions (y/n)" "Chrome\install_chrome_extensions.ps1"
+RunScript "Installation Visio Extensions (y/n)" "Chrome\install_visio_extensions.ps1"
 
 Write-Host "Fin de l'installation" -ForegroundColor Yellow
