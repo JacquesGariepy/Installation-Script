@@ -34,6 +34,7 @@ winget install -e -h --id BraveSoftware.BraveBrowser --force --accept-source-agr
 
 # IDEs
 winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise-Preview --force --accept-source-agreements
+# winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise --force --accept-source-agreements
 winget install -e -h --id Microsoft.VisualStudioCode --force --accept-source-agreements
 winget install -e -h --id Microsoft.VisualStudioCode.Insiders --force --accept-source-agreements
 winget install -e -h --id Notepad++.Notepad++ --force --accept-source-agreements
