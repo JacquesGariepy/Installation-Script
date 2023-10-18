@@ -31,6 +31,7 @@ winget install -e -h --id Mozilla.Firefox --force --accept-source-agreements
 winget install -e -h --id Mozilla.Firefox.DeveloperEdition --force --accept-source-agreements
 winget install -e -h --id Microsoft.Edge.Beta --force --accept-source-agreements
 winget install -e -h --id BraveSoftware.BraveBrowser --force --accept-source-agreements  # Additional: Brave Browser
+winget install -e -h --id=Brave.Brave --force --accept-source-agreements
 
 # IDEs
 winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise-Preview --force --accept-source-agreements
@@ -48,12 +49,14 @@ winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
 winget install -e -h --id Python.Python.3 --force --accept-source-agreements
-winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements  # Additional: Anaconda for Data Science
+winget install -e -h --id Anaconda.Anaconda3
+winget install -e -h--id=Microsoft.WindowsTerminal --force --accept-source-agreements  # Additional: Anaconda for Data Science
 
 # Git
 winget install -e -i --id Git.Git --force --accept-source-agreements
 winget install -e -h --id GitHub.GitLFS --force --accept-source-agreements
 winget install -e -h --id GitHub.cli --force --accept-source-agreements
+winget install -e -h --id=GitHub.GitHubDesktop  --force --accept-source-agreements
 winget install -e -h --id Axosoft.GitKraken --force --accept-source-agreements
 
 # Database
@@ -73,6 +76,7 @@ winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
 winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
 winget install -e -h --id Postman.Postman --force --accept-source-agreements  # Additional: Postman for API Testing
 winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
+winget install -e -h --id=PuTTY.PuTTY --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
@@ -82,4 +86,5 @@ winget install -e -h --id Microsoft.AzureCLI --force --accept-source-agreements
 #VM
 winget install -e -h --id Oracle.VirtualBox --force --accept-source-agreements 
 
-
+#Organisation
+winget install -e -h --id=Notion.Notion --force --accept-source-agreements 
