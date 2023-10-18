@@ -1,3 +1,4 @@
+#https://winstall.app/packs/9C9rLoBxF
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Output "winget is already installed."
 } else {
@@ -82,6 +83,7 @@ winget install -e -h --id=PuTTY.PuTTY --force --accept-source-agreements
 winget install -e -h --id=RARLab.WinRAR --force --accept-source-agreements
 winget install -e -h --id=TorProject.TorBrowser --force --accept-source-agreements
 winget install -e -h --id=Obsidian.Obsidian --force --accept-source-agreements
+winget install -e -h --id=SomePythonThings.WingetUIStore --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
