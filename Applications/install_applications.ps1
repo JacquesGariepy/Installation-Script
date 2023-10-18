@@ -50,8 +50,10 @@ winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
 winget install -e -h --id Python.Python.3 --force --accept-source-agreements
-winget install -e -h --id Anaconda.Anaconda3
-winget install -e -h--id=Microsoft.WindowsTerminal --force --accept-source-agreements  # Additional: Anaconda for Data Science
+winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements
+# winget install -e -h --id --id=Anaconda.Miniconda3 --force --accept-source-agreements #miniconda or anaconda
+winget install -e -h --id=Microsoft.WindowsTerminal --force --accept-source-agreements
+winget install -e -h --id=Microsoft.WingetCreate  --force --accept-source-agreements
 
 # Git
 winget install -e -i --id Git.Git --force --accept-source-agreements
@@ -80,9 +82,11 @@ winget install -e -h --id Postman.Postman --force --accept-source-agreements  # 
 winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
 winget install -e -h --id=PuTTY.PuTTY --force --accept-source-agreements
 winget install -e -h --id=RARLab.WinRAR --force --accept-source-agreements
+winget install -e -h --id=M2Team.NanaZip --force --accept-source-agreements
 winget install -e -h --id=TorProject.TorBrowser --force --accept-source-agreements
 winget install -e -h --id=Obsidian.Obsidian --force --accept-source-agreements
 winget install -e -h --id=SomePythonThings.WingetUIStore --force --accept-source-agreements
+winget install -e -h --id=HandyOrg.HandyWinget-GUI --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
@@ -98,3 +102,10 @@ winget install -e -h --id=Discord.Discord --force --accept-source-agreements
 
 #Video
 winget install -e -h --id=OBSProject.OBSStudio.Pre-release --force --accept-source-agreements
+
+#hardware
+winget install -e -h --id=CPUID.CPU-Z --force --accept-source-agreements
+
+#secure
+winget install -e -h --id=Bitwarden.Bitwarden --force --accept-source-agreements
+winget install -e -h --id=PrestonN.FreeTube --force --accept-source-agreements
