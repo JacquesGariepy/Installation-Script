@@ -80,7 +80,8 @@ winget install -e -h --id Postman.Postman --force --accept-source-agreements  # 
 winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
 winget install -e -h --id=PuTTY.PuTTY --force --accept-source-agreements
 winget install -e -h --id=RARLab.WinRAR --force --accept-source-agreements
-
+winget install -e -h --id=TorProject.TorBrowser --force --accept-source-agreements
+winget install -e -h --id=Obsidian.Obsidian --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
