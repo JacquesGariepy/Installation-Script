@@ -88,3 +88,4 @@ winget install -e -h --id Oracle.VirtualBox --force --accept-source-agreements
 
 #Organisation
 winget install -e -h --id=Notion.Notion --force --accept-source-agreements 
+winget install -e -h --id=Discord.Discord --force --accept-source-agreements 
