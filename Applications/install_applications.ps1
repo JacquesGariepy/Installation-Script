@@ -56,6 +56,10 @@ winget install -e -h --id Microsoft.WindowsTerminal --force --accept-source-agre
 winget install -e -h --id Microsoft.WingetCreate --force --accept-source-agreements
 winget install -e -h --id GitTools.GitVersion --force --accept-source-agreements
 winget install -e -h --id Chocolatey.Chocolatey --force --accept-source-agreements
+winget install -e -h --id JetBrains.ReSharper --force --accept-source-agreements
+winget install -e -h --id JetBrains.Rider --force --accept-source-agreements
+winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
+winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
 
 # Git
 winget install -e -i --id Git.Git --force --accept-source-agreements
@@ -75,16 +79,14 @@ winget install -e -h --id MongoDB.MongoDB --force --accept-source-agreements  # 
 winget install -e -h --id AllroundAutomations.PLSQLDeveloper -force --accept-source-agreements
 winget install -e -h --id PostgreSQL.PostgreSQL -force --accept-source-agreements
 
+# call
+winget install -e -h --id Telerik.Fiddler --force --accept-source-agreements
+winget install -e -h --id Postman.Postman --force --accept-source-agreements  # Additional: Postman for API Testing
+winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
+
 # Tools
 winget install -e -h --id Docker.DockerDesktop --force --accept-source-agreements
 winget install -e -h --id Microsoft.PowerBI  --force --accept-source-agreements
-winget install -e -h --id Telerik.Fiddler --force --accept-source-agreements
-winget install -e -h --id JetBrains.ReSharper --force --accept-source-agreements
-winget install -e -h --id JetBrains.Rider --force --accept-source-agreements
-winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
-winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
-winget install -e -h --id Postman.Postman --force --accept-source-agreements  # Additional: Postman for API Testing
-winget install -e -h --id SmartBear.SoapUI --force --accept-source-agreements
 winget install -e -h --id PuTTY.PuTTY --force --accept-source-agreements
 winget install -e -h --id RARLab.WinRAR --force --accept-source-agreements
 winget install -e -h --id M2Team.NanaZip --force --accept-source-agreements
@@ -95,6 +97,7 @@ winget install -e -h --id HandyOrg.HandyWinget-GUI --force --accept-source-agree
 winget install -e -h --id Microsoft.PowerToys --force --accept-source-agreements
 winget install -e -h --id Microsoft.PCManager --force --accept-source-agreements
 winget install -e -h --id Google.NearbyShare --force --accept-source-agreements
+winget install  -e -h --id Adobe.Acrobat.Reader.64-bit --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
@@ -118,3 +121,9 @@ winget install -e -h --id CPUID.CPU-Z --force --accept-source-agreements
 #secure
 winget install -e -h --id Bitwarden.Bitwarden --force --accept-source-agreements
 winget install -e -h --id PrestonN.FreeTube --force --accept-source-agreements
+
+#teams
+winget install -e -h --id Discord.Discord --force --accept-source-agreements
+
+#ui
+winget install -e -h --id SlackTechnologies.Slack --force --accept-source-agreements
