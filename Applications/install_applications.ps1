@@ -55,6 +55,7 @@ winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements
 winget install -e -h --id Microsoft.WindowsTerminal --force --accept-source-agreements
 winget install -e -h --id Microsoft.WingetCreate --force --accept-source-agreements
 winget install -e -h --id GitTools.GitVersion --force --accept-source-agreements
+winget install -e -h --id Chocolatey.Chocolatey --force --accept-source-agreements
 
 # Git
 winget install -e -i --id Git.Git --force --accept-source-agreements
@@ -63,6 +64,8 @@ winget install -e -h --id GitHub.cli --force --accept-source-agreements
 winget install -e -h --id GitHub.GitHubDesktop.Beta  --force --accept-source-agreements 
 winget install -e -h --id Axosoft.GitKraken --force --accept-source-agreements
 winget install -e -h --id StefHeyenrath.GitHubReleaseNotes --force --accept-source-agreements
+winget install -e -h --id GitHub.ClassroomAssistant --force --accept-source-agreements #for course
+# winget install -e -h --id=GitHub.GitLFS  --force --accept-source-agreements #for course
 
 # Database
 winget install -e -i --id Microsoft.AzureDataStudio.Insiders --force --accept-source-agreements
@@ -90,6 +93,8 @@ winget install -e -h --id Obsidian.Obsidian --force --accept-source-agreements
 winget install -e -h --id SomePythonThings.WingetUIStore --force --accept-source-agreements
 winget install -e -h --id HandyOrg.HandyWinget-GUI --force --accept-source-agreements
 winget install -e -h --id Microsoft.PowerToys --force --accept-source-agreements
+winget install -e -h --id Microsoft.PCManager --force --accept-source-agreements
+winget install -e -h --id Google.NearbyShare --force --accept-source-agreements
 
 # Azure
 winget install -e -h --id Microsoft.AzureDataStudio --force --accept-source-agreements
@@ -105,6 +110,7 @@ winget install -e -h --id Discord.Discord --force --accept-source-agreements
 
 #Video
 winget install -e -h --id OBSProject.OBSStudio.Pre-release --force --accept-source-agreements
+winget install -e -h --id VideoLAN.VLC --force --accept-source-agreements
 
 #hardware
 winget install -e -h --id CPUID.CPU-Z --force --accept-source-agreements
