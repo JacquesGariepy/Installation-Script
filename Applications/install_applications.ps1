@@ -1,4 +1,3 @@
-#https://winstall.app/packs/9C9rLoBxF
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Output "winget is already installed."
 } else {
