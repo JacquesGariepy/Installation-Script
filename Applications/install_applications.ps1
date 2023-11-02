@@ -25,8 +25,9 @@ winget install -e -h --id JanDeDobbeleer.OhMyPosh --force --accept-source-agreem
 
 # Browsers
 winget install -e -h --id Google.Chrome --force --accept-source-agreements
-winget install -e -h --id Google.Chrome.Dev --force --accept-source-agreements
 winget install -e -h --id Google.Chrome.Beta --force --accept-source-agreements
+winget install -e -h --id Google.Chrome.Dev --force --accept-source-agreements
+winget install -e -h --id Google.Chrome.Canary --force --accept-source-agreements
 winget install -e -h --id Mozilla.Firefox --force --accept-source-agreements
 winget install -e -h --id Mozilla.Firefox.DeveloperEdition --force --accept-source-agreements
 winget install -e -h --id Microsoft.Edge.Beta --force --accept-source-agreements
