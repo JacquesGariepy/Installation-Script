@@ -33,6 +33,7 @@ $extensions = @{
     "ChatGPT LINER" = "bmhcbmnbenmcecpmpepghooflbehcack";
     "AI Prompt Genius" = "jjdnakkfjnnbbckhifcfchagnpofjffo";
     "OneTab" = "chphlpgkkbolifaimnlloiipkdnihall";
+    "file-icons-for-github-and"="ficfmibkjjnpogdcfhfokmihanoldbfe";
     # "" = "";
 }
 
