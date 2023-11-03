@@ -34,6 +34,7 @@ param(
         "ms-mssql.mssql",
         "ms-vscode.powershell",
         "ms-vscode.live-server"
+        "shd101wyy.markdown-preview-enhanced"
     ),
 
     [switch]$LaunchWhenDone
