@@ -12,26 +12,26 @@ $pipPackages = @(
     # Ajoutez d'autres packages pip ici
 )
 
-# Demander à l'utilisateur de fournir le répertoire de destination
-$destinationDirectory = Read-Host "Veuillez entrer le chemin complet du répertoire de destination pour cloner les projets GitHub :"
+# Demander à l'utilisateur de fournir le nom de l'environnement Anaconda (ou utiliser "base" par défaut)
+$condaEnvironment = Read-Host "Veuillez entrer le nom de l'environnement Anaconda (ou appuyez sur Entrée pour utiliser 'base')"
 
-# Créer le répertoire s'il n'existe pas
-if (-Not (Test-Path -Path $destinationDirectory -PathType Container)) {
-    New-Item -Path $destinationDirectory -ItemType Directory
+if ([string]::IsNullOrEmpty($condaEnvironment)) {
+    $condaEnvironment = "base"
 }
 
 # Cloner les projets GitHub
 foreach ($githubProject in $githubProjects) {
-    Write-Host "Clonage du projet GitHub : $githubProject dans $destinationDirectory"
-    git clone $githubProject $destinationDirectory
+    Write-Host "Clonage du projet GitHub : $githubProject dans le répertoire courant"
+    git clone $githubProject
 }
 
-# Installer les packages pip
+# Installer les packages pip globalement dans l'environnement Anaconda spécifié
 foreach ($pipPackage in $pipPackages) {
-    Write-Host "Installation du package pip : $pipPackage"
+    Write-Host "Installation du package pip : $pipPackage dans l'environnement Anaconda '$condaEnvironment'"
+    conda activate $condaEnvironment
     pip install $pipPackage
+    conda deactivate
 }
 
 Write-Host "Toutes les opérations ont été effectuées avec succès."
 
-# Question : Avez-vous des liens spécifiques de projets GitHub et de packages pip que vous souhaitez utiliser avec ce script ?
