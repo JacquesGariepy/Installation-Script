@@ -1,3 +1,5 @@
+# ******** NON TESTÉ EN DEVELOPPEMENT ********
+
 # Liste des projets GitHub à cloner
 $githubProjects = @(
     "https://github.com/JacquesGariepy/Installation-Script.git",
