@@ -50,6 +50,7 @@ winget install -e -h --id OpenJS.NodeJS --force --accept-source-agreements
 winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
+winget install -e -h --id GitHub.cli --force
 winget install -e -h --id Python.Python.3 --force --accept-source-agreements
 winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements
 # winget install -e -h --id Anaconda.Miniconda3 --force --accept-source-agreements #miniconda or anaconda
