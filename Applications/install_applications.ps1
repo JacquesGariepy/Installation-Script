@@ -43,6 +43,7 @@ winget install -e -h --id Microsoft.VisualStudioCode.Insiders --force --accept-s
 winget install -e -h --id Notepad++.Notepad++ --force --accept-source-agreements
 winget install -e -h --id JetBrains.PyCharm --force --accept-source-agreements  # Additional: PyCharm for Python Development
 winget install -e -h --id WinMerge.WinMerge --force --accept-source-agreements 
+winget install -e -h  --id JGraph.Draw --force --accept-source-agreements
 
 # Frameworks
 winget install -e -h --id Microsoft.dotnet --force --accept-source-agreements
