@@ -32,7 +32,8 @@ winget install -e -h --id Mozilla.Firefox --force --accept-source-agreements
 winget install -e -h --id Mozilla.Firefox.DeveloperEdition --force --accept-source-agreements
 winget install -e -h --id Microsoft.Edge.Beta --force --accept-source-agreements
 winget install -e -h --id BraveSoftware.BraveBrowser --force --accept-source-agreements  # Additional: Brave Browser
-winget install -e -h --id Brave.Brave.Nightly --force --accept-source-agreements 
+winget install -e -h --id Brave.Brave.Nightly --force --accept-source-agreements
+winget install -e -h --id Opera.OperaGX --force --accept-source-agreements
 winget install -e -h --id TorProject.TorBrowser --force --accept-source-agreements
 
 # IDEs
