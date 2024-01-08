@@ -37,6 +37,7 @@ winget install -e -h --id Opera.OperaGX --force --accept-source-agreements
 winget install -e -h --id TorProject.TorBrowser --force --accept-source-agreements
 
 # IDEs
+# winget install -e -i --id "Microsoft.Office" --force --accept-source-agreements # --override "/configure C:/path/to/config/file.xml"
 winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise-Preview --force --accept-source-agreements
 # winget install -e -i --id Microsoft.VisualStudio.2022.Enterprise --force --accept-source-agreements
 winget install -e -h --id Microsoft.VisualStudioCode --force --accept-source-agreements
@@ -49,7 +50,6 @@ winget install -e -h  --id JGraph.Draw --force --accept-source-agreements
 # Frameworks
 winget install -e -h --id Microsoft.dotnet --force --accept-source-agreements
 winget install -e -h --id OpenJS.NodeJS --force --accept-source-agreements
-winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
 winget install -e -h --id Python.Python.3 --force --accept-source-agreements
@@ -63,6 +63,7 @@ winget install -e -h --id JetBrains.ReSharper --force --accept-source-agreements
 winget install -e -h --id JetBrains.Rider --force --accept-source-agreements
 winget install -e -h --id JetBrains.WebStorm --force --accept-source-agreements
 winget install -e -h --id JetBrains.DataGrip --force --accept-source-agreements
+winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Git
 winget install -e -i --id Git.Git --force --accept-source-agreements
@@ -116,6 +117,7 @@ winget install -e -h --id Obsidian.Obsidian --force --accept-source-agreements
 #Communication
 winget install -e -h --id Discord.Discord --force --accept-source-agreements
 winget install -e -h --id SlackTechnologies.Slack --force --accept-source-agreements
+winget install -e -h --id Telegram.TelegramDesktop --force --accept-source-agreements
 
 #Video
 winget install -e -h --id OBSProject.OBSStudio.Pre-release --force --accept-source-agreements
