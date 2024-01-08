@@ -52,7 +52,6 @@ winget install -e -h --id OpenJS.NodeJS --force --accept-source-agreements
 winget install -e -h --id Yarn.Yarn --force --accept-source-agreements
 
 # Development
-winget install -e -h --id GitHub.cli --force
 winget install -e -h --id Python.Python.3 --force --accept-source-agreements
 winget install -e -h --id Anaconda.Anaconda3 --force --accept-source-agreements
 # winget install -e -h --id Anaconda.Miniconda3 --force --accept-source-agreements #miniconda or anaconda
@@ -95,7 +94,6 @@ winget install -e -h --id PuTTY.PuTTY --force --accept-source-agreements
 winget install -e -h --id RARLab.WinRAR --force --accept-source-agreements
 winget install -e -h --id M2Team.NanaZip --force --accept-source-agreements
 winget install -e -h --id TorProject.TorBrowser --force --accept-source-agreements
-winget install -e -h --id Obsidian.Obsidian --force --accept-source-agreements
 winget install -e -h --id SomePythonThings.WingetUIStore --force --accept-source-agreements
 winget install -e -h --id HandyOrg.HandyWinget-GUI --force --accept-source-agreements
 winget install -e -h --id Microsoft.PowerToys --force --accept-source-agreements
@@ -112,8 +110,12 @@ winget install -e -h --id Microsoft.AzureCLI --force --accept-source-agreements
 winget install -e -h --id Oracle.VirtualBox --force --accept-source-agreements 
 
 #Organisation
-winget install -e -h --id Notion.Notion --force --accept-source-agreements 
-winget install -e -h --id Discord.Discord --force --accept-source-agreements 
+winget install -e -h --id Notion.Notion --force --accept-source-agreements
+winget install -e -h --id Obsidian.Obsidian --force --accept-source-agreements
+
+#Communication
+winget install -e -h --id Discord.Discord --force --accept-source-agreements
+winget install -e -h --id SlackTechnologies.Slack --force --accept-source-agreements
 
 #Video
 winget install -e -h --id OBSProject.OBSStudio.Pre-release --force --accept-source-agreements
@@ -126,8 +128,3 @@ winget install -e -h --id CPUID.CPU-Z --force --accept-source-agreements
 winget install -e -h --id Bitwarden.Bitwarden --force --accept-source-agreements
 winget install -e -h --id PrestonN.FreeTube --force --accept-source-agreements
 
-#teams
-winget install -e -h --id Discord.Discord --force --accept-source-agreements
-
-#ui
-winget install -e -h --id SlackTechnologies.Slack --force --accept-source-agreements
