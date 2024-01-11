@@ -49,6 +49,7 @@ winget install -e -h  --id JGraph.Draw --force --accept-source-agreements
 
 # Frameworks
 winget install -e -h --id Microsoft.dotnet --force --accept-source-agreements
+winget install -e -h --id Microsoft.DotNet.SDK.8 --force --accept-source-agreements
 winget install -e -h --id OpenJS.NodeJS --force --accept-source-agreements
 
 # Development
