@@ -1,9 +1,10 @@
 # ============================================================================
-# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - v4.4 EXTENDED
-#  - UTF-8 safe logging/console
+# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - v4.5 EXTENDED
+#  - UTF-8 safe console/logging
 #  - App installer (profiles | all | select | search | ids)
 #  - WSL resilient install (DISM/SFC fallback)
 #  - Security/Privacy/Perf/UI/Network/Bloatware
+#  - System Info menu now includes your full Batch "Security Report" generator
 # ============================================================================
 
 #Requires -RunAsAdministrator
@@ -48,16 +49,11 @@ param(
     [switch]$DefaultUser,
 
     # ---------------- Apps: nouvelles options CLI ----------------
-    # Installe un bundle d’apps par profil: Dev|Browsers|Media|SysTools|AllCommon
     [ValidateSet('Dev','Browsers','Media','SysTools','AllCommon')]
     [string]$AppsProfile,
-    # Installe tous les bundles (équiv. Dev+Browsers+Media+SysTools)
     [switch]$AppsAll,
-    # Sélection interactive de bundles d’apps
     [switch]$AppsSelect,
-    # Recherche interactive winget/choco puis installation
     [switch]$AppsSearch,
-    # Installe des apps par IDs (winget/choco) passés en paramètre
     [string[]]$InstallAppIds
 )
 
@@ -65,13 +61,9 @@ param(
 # GLOBAL CONFIGURATION & UTF-8 SAFETY
 # ============================================================================
 
-# Forcer la console et les sorties en UTF-8 (évite €â€â€¦)
-try {
-    chcp 65001 > $null 2>&1
-} catch {}
+try { chcp 65001 > $null 2>&1 } catch {}
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false) } catch {}
 
-# Par défaut, tous les Out-File/Add-Content/Set-Content seront en UTF-8
 $PSDefaultParameterValues = @{
   'Out-File:Encoding'    = 'utf8'
   'Add-Content:Encoding' = 'utf8'
@@ -79,15 +71,11 @@ $PSDefaultParameterValues = @{
   'Export-Csv:Encoding'  = 'utf8'
 }
 
-$global:ScriptVersion = "4.4-EXT"
+$global:ScriptVersion = "4.5-EXT"
 $global:ScriptName    = "Windows 11 Ultimate Configuration Tool - Extended"
 
-# Ensure log directory exists
-if (!(Test-Path $LogPath)) {
-    New-Item -ItemType Directory -Path $LogPath -Force | Out-Null
-}
+if (!(Test-Path $LogPath)) { New-Item -ItemType Directory -Path $LogPath -Force | Out-Null }
 
-# Logs séparés (transcript vs log applicatif)
 $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $global:LogFile        = Join-Path $LogPath "Win11Config_${stamp}.log"
 $global:TranscriptFile = Join-Path $LogPath "Win11Config_${stamp}.transcript.txt"
@@ -105,15 +93,12 @@ $global:OriginalDNS     = @{}
     if (!(Test-Path $_)) { New-Item -ItemType Directory -Path $_ -Force | Out-Null }
 }
 
-# Monter HKCR/HKU si absent
-foreach ($d in @(@{Name='HKCR';Root='HKEY_CLASSES_ROOT'},
-                 @{Name='HKU' ;Root='HKEY_USERS'})) {
+foreach ($d in @(@{Name='HKCR';Root='HKEY_CLASSES_ROOT'}, @{Name='HKU';Root='HKEY_USERS'})) {
     if (-not (Get-PSDrive $d.Name -ErrorAction SilentlyContinue)) {
         New-PSDrive -PSProvider Registry -Name $d.Name -Root $d.Root | Out-Null
     }
 }
 
-# Démarrer transcript (UTF-16 LE par design)
 try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
 try { Start-Transcript -Path $global:TranscriptFile -Append -Force | Out-Null } catch { Write-Warning "Unable to start transcript logging" }
 
@@ -150,18 +135,10 @@ function Set-RegistryValue {
     try {
         if (!(Test-Path $Path)) { New-Item -Path $Path -Force | Out-Null; Write-LogMessage "Created registry path: $Path" "Verbose" }
         $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
-        if ($existing -ne $null) {
-            Set-ItemProperty -Path $Path -Name $Name -Value $Value -Force
-            Write-LogMessage "Updated registry value: $Path\$Name" "Verbose"
-        } else {
-            New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
-            Write-LogMessage "Created registry value: $Path\$Name (Type: $Type)" "Verbose"
-        }
+        if ($existing -ne $null) { Set-ItemProperty -Path $Path -Name $Name -Value $Value -Force; Write-LogMessage "Updated registry value: $Path\$Name" "Verbose" }
+        else { New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null; Write-LogMessage "Created registry value: $Path\$Name (Type: $Type)" "Verbose" }
         return $true
-    } catch {
-        Write-LogMessage "Failed to set registry value: $Path\$Name - $_" "Error"
-        return $false
-    }
+    } catch { Write-LogMessage "Failed to set registry value: $Path\$Name - $_" "Error"; return $false }
 }
 
 function Test-Windows11 {
@@ -182,10 +159,7 @@ function Disable-TaskSafe { param([string]$TaskPath,[string]$TaskName)
         $task | Disable-ScheduledTask -ErrorAction Stop | Out-Null
         Write-LogMessage "Disabled task: $TaskPath$TaskName" "Success"
         return $true
-    } catch {
-        Write-LogMessage "Task not found or cannot disable: $TaskPath$TaskName - $_" "Warning"
-        return $false
-    }
+    } catch { Write-LogMessage "Task not found or cannot disable: $TaskPath$TaskName - $_" "Warning"; return $false }
 }
 
 function Invoke-ForEachUserHive { param([Parameter(Mandatory)][ScriptBlock]$Script)
@@ -304,7 +278,7 @@ function Execute-Feature { param([string]$FeatureKey)
     catch { Write-LogMessage "Failed: $($feature.Name) - $_" "Error"; return $false }
 }
 
-# ---------------- Apps helpers (winget / choco) ----------------
+# ---------------- Apps helpers ----------------
 
 function Ensure-WingetOrChoco {
     if (Get-Command winget -ErrorAction SilentlyContinue) { return "winget" }
@@ -318,8 +292,7 @@ function Ensure-WingetOrChoco {
     return (Get-Command choco -ErrorAction SilentlyContinue) ? "choco" : $null
 }
 
-function Install-AppIds {
-    param([string[]]$Ids)
+function Install-AppIds { param([string[]]$Ids)
     if (!$Ids -or $Ids.Count -eq 0) { return }
     $pm = Ensure-WingetOrChoco
     if (-not $pm) { Write-LogMessage "No package manager available." "Error"; return }
@@ -341,21 +314,19 @@ function Install-AppIds {
 function Install-AppBundle { param([string[]]$WingetIds,[string[]]$ChocoIds)
     $pm = Ensure-WingetOrChoco
     if (-not $pm) { Write-LogMessage "No package manager available." "Error"; return }
-    if ($pm -eq "winget") { Install-AppIds -Ids $WingetIds }
-    else { Install-AppIds -Ids $ChocoIds }
+    if ($pm -eq "winget") { Install-AppIds -Ids $WingetIds } else { Install-AppIds -Ids $ChocoIds }
 }
 
 function Search-And-Install-Apps {
-    # Recherche interactive puis install par ID exact (winget prioritaire)
     $pm = Ensure-WingetOrChoco
     if (-not $pm) { return }
     while ($true) {
         $q = Read-Host "Rechercher une app (laisser vide pour quitter)"
         if ([string]::IsNullOrWhiteSpace($q)) { break }
         if ($pm -eq "winget") {
-            Write-Host "`nRésultats winget pour '$q' (note l'ID exact) :" -ForegroundColor Cyan
+            Write-Host "`nRésultats winget pour '$q' :" -ForegroundColor Cyan
             try { winget search $q | Out-String | Write-Host } catch {}
-            $choose = Read-Host "Entrer un ou plusieurs IDs (séparés par des virgules) à installer, ou vide pour sauter"
+            $choose = Read-Host "Entrer un ou plusieurs IDs (séparés par des virgules) à installer"
             if (![string]::IsNullOrWhiteSpace($choose)) {
                 $ids = $choose.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
                 Install-AppIds -Ids $ids
@@ -363,7 +334,7 @@ function Search-And-Install-Apps {
         } else {
             Write-Host "`nRésultats choco pour '$q' :" -ForegroundColor Cyan
             try { choco search $q | Out-String | Write-Host } catch {}
-            $choose = Read-Host "Entrer un ou plusieurs noms choco (séparés par des virgules) à installer, ou vide"
+            $choose = Read-Host "Entrer un ou plusieurs noms choco (séparés par des virgules) à installer"
             if (![string]::IsNullOrWhiteSpace($choose)) {
                 $ids = $choose.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }
                 Install-AppIds -Ids $ids
@@ -376,21 +347,177 @@ function Search-And-Install-Apps {
 
 function Repair-ComponentStore {
     Write-LogMessage "Repairing component store (DISM /RestoreHealth + SFC)..." "Info"
+    try { DISM /Online /Cleanup-Image /RestoreHealth | Out-Null } catch { Write-LogMessage "DISM failed: $_" "Warning" }
+    try { sfc /scannow | Out-Null } catch { Write-LogMessage "SFC failed: $_" "Warning" }
+}
+
+# ---------------- Security Report (Batch) integration ----------------
+
+function Write-SecurityReportBatchScript {
+    $path = Join-Path $global:TempPath "Security_Report_Gather.cmd"
+    $batch = @'
+@echo off
+REM ==========================================================================
+REM System Information Gathering Script for Security Analysis
+REM Author: Jacques Gariépy
+REM Date: %DATE%
+REM ==========================================================================
+REM
+REM                           *** IMPORTANT ***
+REM
+REM This script must be run as an administrator!
+REM (Right-click -> Run as administrator)
+REM
+REM ==========================================================================
+REM
+REM                      *** EDUCATIONAL NOTE ***
+REM
+REM This script is intended for purely educational and demonstrative purposes.
+REM It gathers detailed system information which can be sensitive.
+REM It illustrates techniques used in system administration and security auditing.
+REM Running this script is at the user's own risk. The user is responsible
+REM for ensuring they have the necessary permissions and comply with all
+REM applicable laws and policies, especially regarding data privacy and
+REM system access, before running it or sharing its output. This script should
+REM not be used without authorization or understanding its potential impact.
+REM
+REM ==========================================================================
+
+REM -- Output File Configuration --
+SET OutputFile="%USERPROFILE%\Desktop\Security_Report_%COMPUTERNAME%_%date:~-4,4%%date:~-7,2%%date:~-10,2%.txt"
+echo Report generated by: %USERNAME% > %OutputFile%
+echo Date and Time: %DATE% %TIME% >> %OutputFile%
+echo Machine: %COMPUTERNAME% >> %OutputFile%
+echo ================================================================ >> %OutputFile%
+echo. >> %OutputFile%
+
+echo [*** START OF INFORMATION GATHERING ***] >> %OutputFile%
+echo. >> %OutputFile%
+
+REM -- Basic Information --
+echo [--- Section 1: User and Machine Information ---] >> %OutputFile%
+echo Current Directory: %CD% >> %OutputFile%
+echo User Domain: %USERDOMAIN% >> %OutputFile%
+echo Logon Server: %LOGONSERVER% >> %OutputFile%
+(whoami /all) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- System Information (OS, Hotfixes) --
+echo [--- Section 2: System Information (OS, Hotfixes) ---] >> %OutputFile%
+(systeminfo) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Hotfixes (WMIC QFE)] >> %OutputFile%
+(wmic qfe list full /format:list) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Installed Software --
+echo [--- Section 3: Installed Software (via MSI - potentially incomplete list) ---] >> %OutputFile%
+(wmic product get Name, Version, Vendor, InstallDate) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Network Configuration --
+echo [--- Section 4: Network Configuration ---] >> %OutputFile%
+echo [IPCONFIG /ALL] >> %OutputFile%
+(ipconfig /all) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [NETSTAT -ANOB (Open ports and associated processes)] >> %OutputFile%
+(netstat -anob) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Windows Firewall Status] >> %OutputFile%
+(netsh advfirewall show allprofiles) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Network Shares (NET SHARE)] >> %OutputFile%
+(net share) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Processes and Services --
+echo [--- Section 5: Processes and Services ---] >> %OutputFile%
+echo [TASKLIST /SVC] >> %OutputFile%
+(tasklist /svc) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Services (SC QUERY)] >> %OutputFile%
+(sc query state= all) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Accounts and Local Security --
+echo [--- Section 6: Accounts and Local Security ---] >> %OutputFile%
+echo [Local User Accounts (NET USER)] >> %OutputFile%
+(net user) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Local Administrators Group Members] >> %OutputFile%
+(net localgroup administrators) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Password Policy (NET ACCOUNTS)] >> %OutputFile%
+(net accounts) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+echo [Exporting Local Security Policy (to SecPol.cfg)] >> %OutputFile%
+del SecPol.cfg > nul 2>&1
+secedit /export /cfg SecPol.cfg /quiet
+IF EXIST SecPol.cfg (type SecPol.cfg >> %OutputFile%) ELSE (echo Failed to export SecPol.cfg >> %OutputFile%)
+echo. >> %OutputFile%
+
+REM -- Scheduled Tasks --
+echo [--- Section 7: Scheduled Tasks ---] >> %OutputFile%
+(schtasks /query /fo LIST /v) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Environment Variables --
+echo [--- Section 8: Environment Variables ---] >> %OutputFile%
+(set) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Hardware Devices --
+echo [--- Section 9: Hardware Devices ---] >> %OutputFile%
+(wmic path Win32_PnPEntity get Caption, DeviceID) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Group Policies --
+echo [--- Section 10: Group Policies ---] >> %OutputFile%
+(gpresult /z) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+REM -- Installed Applications and Versions (Redundant with Section 3, but included as requested) --
+echo [--- Section 11: Installed Applications and Versions ---] >> %OutputFile%
+(wmic product get Name,Version) >> %OutputFile% 2>&1
+echo. >> %OutputFile%
+
+echo [*** END OF INFORMATION GATHERING ***] >> %OutputFile%
+echo. >> %OutputFile%
+echo ================================================================ >> %OutputFile%
+
+echo.
+echo The full report has been generated in:
+echo %OutputFile%
+echo The security policy export is in SecPol.cfg (if successful - check script directory).
+echo.
+echo Manual Analysis Required! This report is a baseline.
+echo Finished.
+pause
+'@
+
+    # Ecrire en ASCII (sans BOM) pour un .cmd 100% compatible
+    Set-Content -Path $path -Value $batch -Encoding ASCII -Force
+    return $path
+}
+
+function Run-SecurityReportBatch {
     try {
-        DISM /Online /Cleanup-Image /RestoreHealth | Out-Null
-    } catch { Write-LogMessage "DISM failed: $_" "Warning" }
-    try {
-        sfc /scannow | Out-Null
-    } catch { Write-LogMessage "SFC failed: $_" "Warning" }
+        $bat = Write-SecurityReportBatchScript
+        Write-LogMessage "Launching Security Report batch: $bat" "Info"
+        # Lancement dans une console distincte (administrateur déjà requis au niveau PowerShell)
+        Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$bat`"" -Wait -Verb RunAs
+        Write-LogMessage "Security Report batch execution completed. Check Desktop for the file 'Security_Report_<MACHINE>_<YYYYMMDD>.txt'." "Success"
+    } catch {
+        Write-LogMessage "Failed to run Security Report batch: $_" "Error"
+    }
 }
 
 # ============================================================================
-# FEATURES (complet)
+# FEATURES
 # ============================================================================
 
 $global:Features = @{
-
-    # ---------- PRIVACY ----------
+    # PRIVACY
     "Privacy.DisableTelemetry" = @{
         Name="Reduce Telemetry (Pro/Enterprise)"; Category="Privacy"; Impact="High"; RebootRequired=$false
         Description="Reduce Windows telemetry to Security (Home=Basic)"
@@ -443,7 +570,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- SECURITY ----------
+    # SECURITY
     "Security.EnableWindowsDefender" = @{
         Name="Defender: Maximum Protection"; Category="Security"; Impact="High"; RebootRequired=$false
         Description="Enable core, cloud, PUA, network protection; CFA in audit"
@@ -545,7 +672,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- PERFORMANCE ----------
+    # PERFORMANCE
     "Performance.DisableStartupApps" = @{
         Name="Disable Non-Essential Startup Apps"; Category="Performance"; Impact="Medium"; RebootRequired=$false
         Description="Disable third-party startup items"
@@ -644,7 +771,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- BLOATWARE ----------
+    # BLOATWARE
     "Bloatware.RemoveMicrosoft" = @{
         Name="Remove Microsoft Bloatware"; Category="Bloatware"; Impact="Low"; RebootRequired=$false
         Description="Remove unnecessary Microsoft apps"
@@ -697,7 +824,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- AI ----------
+    # AI
     "AI.DisableCopilot" = @{
         Name="Disable Microsoft Copilot"; Category="AI"; Impact="Low"; RebootRequired=$false
         Description="Disable Copilot button & policy"
@@ -717,7 +844,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- UI ----------
+    # UI
     "UI.EnableDarkMode" = @{
         Name="Enable Dark Mode"; Category="Interface"; Impact="Low"; RebootRequired=$false
         Description="Dark mode for system and apps"
@@ -756,7 +883,7 @@ $global:Features = @{
         Script={ Invoke-ForEachUserHive { param($root) Set-RegistryValue "$root\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Hidden" 1; Set-RegistryValue "$root\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowSuperHidden" 1 }; Restart-Explorer; Write-LogMessage "Hidden files visible" "Success" }
     }
 
-    # ---------- NETWORK ----------
+    # NETWORK
     "Network.OptimizeDNS" = @{
         Name="Set Fast DNS (backup)"; Category="Network"; Impact="Low"; RebootRequired=$false
         Description="Cloudflare DNS + keep backup"
@@ -768,7 +895,7 @@ $global:Features = @{
         Script={ Set-RegistryValue "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters" "DisabledComponents" 0x20; Write-LogMessage "IPv4 preferred" "Success" }
     }
 
-    # ---------- DEV ----------
+    # DEV
     "Dev.InstallWSL" = @{
         Name="Install WSL2 with Ubuntu"; Category="Development"; Impact="Low"; RebootRequired=$true
         Description="Enable features + install WSL2 (repair on failure)"
@@ -802,7 +929,7 @@ $global:Features = @{
         }
     }
 
-    # ---------- APPS (bundles) ----------
+    # APPS (bundles)
     "Apps.Dev" = @{
         Name="Install Dev Stack"; Category="Apps"; Impact="Low"; RebootRequired=$false
         Description="VS Code, Git, Node.js LTS, Python, Docker Desktop"
@@ -1097,26 +1224,6 @@ function Show-MaintenanceTools {
     Read-Host "Entrée pour continuer"
 }
 
-function Show-BackupRestore {
-    Show-Banner
-    Write-Host "`n BACKUP & RESTORE" -ForegroundColor Yellow
-    Write-Host " [1] Create Restore Point"
-    Write-Host " [2] Backup Registry"
-    Write-Host " [3] Restore Registry Backup"
-    Write-Host " [4] Export All Settings"
-    Write-Host " [5] List Restore Points"
-    Write-Host " [B] Retour"
-    switch (Read-Host "Choix") {
-        "1" { $d=Read-Host "Description"; if (!$d){$d="Manual Restore Point"}; Create-SystemRestorePoint -Description $d | Out-Null }
-        "2" { $ts=Get-Date -Format 'yyyyMMdd_HHmmss'; $b1="$global:BackupPath\Registry_HKLM_$ts.reg"; $b2="$global:BackupPath\Registry_HKCU_$ts.reg"; reg export HKLM "$b1" /y 2>&1 | Out-Null; reg export HKCU "$b2" /y 2>&1 | Out-Null; Write-LogMessage "Registry backup saved: $global:BackupPath" "Success" }
-        "3" { $b=Get-ChildItem -Path $global:BackupPath -Filter "*.reg" -ErrorAction SilentlyContinue; if ($b){ $i=1; foreach($f in $b){ Write-Host " [$i] $($f.Name)"; $i++ } $s=Read-Host "Sélection"; $idx=[int]$s-1; if ($idx -ge 0 -and $idx -lt $b.Count){ Write-Host "WARNING: registry will be modified!" -ForegroundColor Red; $c=Read-Host "Are you sure? (yes/no)"; if ($c -eq "yes"){ reg import $b[$idx].FullName 2>&1 | Out-Null; Write-LogMessage "Registry restored: $($b[$idx].Name)" "Success" } } } else { Write-Host "No backups." -ForegroundColor Yellow } }
-        "4" { Export-CurrentConfiguration | Out-Null }
-        "5" { try { Get-ComputerRestorePoint | Format-Table -AutoSize } catch { Write-Host "Cannot list restore points" -ForegroundColor Red } }
-        default { }
-    }
-    Read-Host "Entrée pour continuer"
-}
-
 function Show-Information {
     Show-Banner
     Write-Host "`n - Privacy  - Security  - Performance  - Bloatware  - AI  - UI  - Network  - Dev  - Apps" -ForegroundColor White
@@ -1128,14 +1235,27 @@ function Show-Information {
 
 function Show-SystemInfo {
     Show-Banner
-    $os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; $mem=Get-CimInstance Win32_ComputerSystem; $disk=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"; $gpu=Get-CimInstance Win32_VideoController
-    Write-Host "OS: $($os.Caption)  EditionID: $(Get-WindowsEditionId)  Version: $($os.Version)  Build: $($os.BuildNumber)  Arch: $($os.OSArchitecture)"
-    Write-Host "CPU: $($cpu.Name)  Cores: $($cpu.NumberOfCores)  Threads: $($cpu.NumberOfLogicalProcessors)"
-    Write-Host "RAM: $([math]::Round($mem.TotalPhysicalMemory/1GB,2)) GB"
-    if ($disk) { Write-Host "C:\  Total: $([math]::Round($disk.Size/1GB,2)) GB  Free: $([math]::Round($disk.FreeSpace/1GB,2)) GB" }
-    if ($gpu)  { Write-Host "GPU: $($gpu.Name)" }
-    Get-NetAdapter | Where-Object Status -eq "Up" | ForEach-Object { Write-Host "NIC: $($_.Name)  $($_.LinkSpeed)" }
-    Read-Host "Entrée pour continuer"
+    Write-Host "`n SYSTEM INFORMATION" -ForegroundColor Yellow
+    Write-Host " [1] Afficher le résumé rapide"
+    Write-Host " [2] Générer le RAPPORT DE SÉCURITÉ détaillé (Batch inclus)"
+    Write-Host " [3] Ouvrir le dossier probable des rapports (Bureau)"
+    Write-Host " [B] Retour"
+    $c = Read-Host "Choix"
+    switch ($c.ToUpper()) {
+        "1" {
+            $os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; $mem=Get-CimInstance Win32_ComputerSystem; $disk=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"; $gpu=Get-CimInstance Win32_VideoController
+            Write-Host "OS: $($os.Caption)  EditionID: $(Get-WindowsEditionId)  Version: $($os.Version)  Build: $($os.BuildNumber)  Arch: $($os.OSArchitecture)"
+            Write-Host "CPU: $($cpu.Name)  Cores: $($cpu.NumberOfCores)  Threads: $($cpu.NumberOfLogicalProcessors)"
+            Write-Host "RAM: $([math]::Round($mem.TotalPhysicalMemory/1GB,2)) GB"
+            if ($disk) { Write-Host "C:\  Total: $([math]::Round($disk.Size/1GB,2)) GB  Free: $([math]::Round($disk.FreeSpace/1GB,2)) GB" }
+            if ($gpu)  { Write-Host "GPU: $($gpu.Name)" }
+            Get-NetAdapter | Where-Object Status -eq "Up" | ForEach-Object { Write-Host "NIC: $($_.Name)  $($_.LinkSpeed)" }
+            Read-Host "Entrée pour continuer"
+        }
+        "2" { Run-SecurityReportBatch; Read-Host "Batch terminé (voir Bureau). Entrée pour continuer" }
+        "3" { Start-Process -FilePath "$env:USERPROFILE\Desktop" }
+        default { }
+    }
 }
 
 function Show-LogFile { if (Test-Path $global:LogFile) { notepad.exe $global:LogFile } else { Write-Host "Log not found." -ForegroundColor Yellow; Read-Host "Entrée…" } }
@@ -1181,9 +1301,7 @@ function Show-AppsInstaller {
             foreach ($idx in $idxs){ if ($idx -ge 0 -and $idx -lt $bundles.Count) { Execute-Feature -FeatureKey $bundles[$idx] } }
         }
         "4" { Search-And-Install-Apps }
-        "5" {
-            $ids=Read-Host "IDs (winget/choco) séparés par virgule"; if ($ids){ $arr=$ids.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }; Install-AppIds -Ids $arr }
-        }
+        "5" { $ids=Read-Host "IDs (winget/choco) séparés par virgule"; if ($ids){ $arr=$ids.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ }; Install-AppIds -Ids $arr } }
         default { }
     }
     Read-Host "Entrée pour continuer"
