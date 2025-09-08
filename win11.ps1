@@ -1,5 +1,5 @@
 # ============================================================================
-# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - VERSION 4.3 PATCHED COMPLETE
+# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - VERSION 4.4 (Corrected)
 # Full Feature Set with All Optimizations, Privacy, Security & Tweaks
 # ============================================================================
 
@@ -49,7 +49,7 @@ param(
 # GLOBAL CONFIGURATION
 # ============================================================================
 
-$global:ScriptVersion = "4.3-PATCHED-COMPLETE"
+$global:ScriptVersion = "4.4-Corrected"
 $global:ScriptName = "Windows 11 Ultimate Configuration Tool - Complete Edition"
 
 # Ensure log directory exists
@@ -64,7 +64,7 @@ if (!(Test-Path $LogPath)) {
 
 # Logging FIX: separate transcript and application log to avoid locks
 $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-$global:LogFile        = Join-Path $LogPath "Win11Config_${stamp}.log"
+$global:LogFile       = Join-Path $LogPath "Win11Config_${stamp}.log"
 $global:TranscriptFile = Join-Path $LogPath "Win11Config_${stamp}.transcript.txt"
 
 $global:ConfigPath = "$env:LOCALAPPDATA\Win11Config"
@@ -323,7 +323,7 @@ function Enable-BitLockerSafe {
     try {
         $editionId = Get-WindowsEditionId
         if (-not $editionId -or $editionId -notin @('Professional','ProfessionalN','ProfessionalWorkstation',
-                                'Enterprise','EnterpriseN','Education','EducationN')) {
+                                                     'Enterprise','EnterpriseN','Education','EducationN')) {
             Write-LogMessage "BitLocker requires Pro/Enterprise/Education. Current: $editionId" "Warning"
             return $false
         }
@@ -421,8 +421,8 @@ function Show-Banner {
     $banner = @"
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║           WINDOWS 11 ULTIMATE CONFIGURATION TOOL v$($global:ScriptVersion)     ║
-║                Complete Feature Set - Patched & Hardened Edition            ║
+║           WINDOWS 11 ULTIMATE CONFIGURATION TOOL v$($global:ScriptVersion)            ║
+║                Complete Feature Set - Patched & Hardened Edition             ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 "@
@@ -490,7 +490,9 @@ function Execute-Feature {
     
     try {
         & $feature.Script
-        $global:AppliedFeatures += $FeatureKey
+        if (-not ($global:AppliedFeatures -contains $FeatureKey)) {
+             $global:AppliedFeatures += $FeatureKey
+        }
         Write-LogMessage "Successfully executed: $($feature.Name)" "Success"
         return $true
     } catch {
@@ -499,45 +501,115 @@ function Execute-Feature {
     }
 }
 
-function Ensure-WingetOrChoco {
-    if (Get-Command winget -ErrorAction SilentlyContinue) { 
-        Write-LogMessage "winget found." "Verbose"
-        return "winget" 
+function global:Ensure-WingetOrChoco {
+    # Si le choix a déjà été fait, on ne redemande pas
+    if ($global:PackageManagerPreference) {
+        return $global:PackageManagerPreference
     }
 
-    if (Get-Command choco -ErrorAction SilentlyContinue) { 
-        Write-LogMessage "Chocolatey found." "Verbose"
-        return "choco"  
-    }
+    # Détecter les gestionnaires de paquets disponibles
+    $wingetAvailable = (Get-Command winget -ErrorAction SilentlyContinue)
+    $chocoAvailable = (Get-Command choco -ErrorAction SilentlyContinue)
 
-    Write-LogMessage "winget not found. Attempting to install Chocolatey (fallback)..." "Warning"
-    try {
-        $oldExecutionPolicy = Get-ExecutionPolicy -Scope Process
-        Set-ExecutionPolicy Bypass -Scope Process -Force -ErrorAction Stop
-        
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        
-        Set-ExecutionPolicy $oldExecutionPolicy -Scope Process -Force -ErrorAction SilentlyContinue
-        
-    } catch {
-        Write-LogMessage "Failed to install Chocolatey: $($_.Exception.Message)" "Error"
-        if ($oldExecutionPolicy) {
-            Set-ExecutionPolicy $oldExecutionPolicy -Scope Process -Force -ErrorAction SilentlyContinue
+    # Scénario 1 : Les deux sont disponibles, l'utilisateur choisit.
+    if ($wingetAvailable -and $chocoAvailable) {
+        Write-LogMessage "Both Winget and Chocolatey are available." "Info"
+        if ($global:Silent) {
+            Write-LogMessage "Silent mode: Defaulting to Winget." "Verbose"
+            $global:PackageManagerPreference = "winget"
+            return "winget"
         }
-        return $null
+        $choice = Read-Host "Choose your preferred package manager for this session [W]inget (default) / [C]hocolatey"
+        if ($choice -eq 'c' -or $choice -eq 'C') {
+            Write-LogMessage "User chose Chocolatey for this session." "Info"
+            $global:PackageManagerPreference = "choco"
+            return "choco"
+        }
+        Write-LogMessage "User chose Winget for this session." "Info"
+        $global:PackageManagerPreference = "winget"
+        return "winget"
     }
 
-    if (Get-Command choco -ErrorAction SilentlyContinue) {
-        Write-LogMessage "Chocolatey installed successfully." "Success"
-        return "choco"
-    } else {
-        Write-LogMessage "Chocolatey was not successfully installed." "Error"
-        return $null
+    # Scénario 2 : Seul Winget est disponible.
+    if ($wingetAvailable) {
+        Write-LogMessage "Only Winget is available. Using it as default." "Verbose"
+        $global:PackageManagerPreference = "winget"
+        return "winget"
     }
+
+    # Scénario 3 : Seul Chocolatey est disponible.
+    if ($chocoAvailable) {
+        Write-LogMessage "Only Chocolatey is available. Using it as default." "Verbose"
+        $global:PackageManagerPreference = "choco"
+        return "choco"
+    }
+
+    # Scénario 4 : Aucun n'est disponible. On demande lequel installer.
+    Write-LogMessage "No package manager found." "Important"
+    $installChoice = 'w' # Winget par défaut
+    if (-not $global:Silent) {
+        $installChoice = Read-Host "Choose which package manager to install and use [W]inget (default) / [C]hocolatey"
+    }
+
+    # --- Tenter l'installation du choix de l'utilisateur ---
+
+    if ($installChoice -eq 'c' -or $installChoice -eq 'C') {
+        # Installation de Chocolatey
+        Write-LogMessage "Attempting to install Chocolatey..." "Info"
+        try {
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+            
+            if (Get-Command choco -ErrorAction SilentlyContinue) {
+                Write-LogMessage "Chocolatey installed successfully." "Success"
+                $global:PackageManagerPreference = "choco"
+                return "choco"
+            }
+        } catch {
+            Write-LogMessage "Failed to install Chocolatey: $($_.Exception.Message)" "Error"
+        }
+    } else {
+        # Installation de Winget (par défaut)
+        Write-LogMessage "Attempting to install Winget from official GitHub source..." "Info"
+        $tempDir = Join-Path $env:TEMP "Winget-Install"
+        try {
+            if (Test-Path $tempDir) { Remove-Item -Path $tempDir -Recurse -Force }
+            New-Item -Path $tempDir -ItemType Directory | Out-Null
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -UseBasicParsing
+            
+            # === CORRECTION ICI : Recherche plus spécifique des URLs ===
+            $wingetUrl = $release.assets.browser_download_url | Where-Object { $_.EndsWith(".msixbundle") } | Select-Object -First 1
+            $dependencyUrl = $release.assets.browser_download_url | Where-Object { $_.Contains("VCLibs") -and $_.Contains("x64") -and $_.EndsWith(".appx") } | Select-Object -First 1
+            # === FIN DE LA CORRECTION ===
+            
+            if (-not $wingetUrl -or -not $dependencyUrl) { throw "Could not find required package URLs in the latest GitHub release." }
+            
+            Write-LogMessage "Downloading $($wingetUrl | Split-Path -Leaf)" "Verbose"; $wingetPath = Join-Path $tempDir "winget.msixbundle"
+            Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetPath -UseBasicParsing
+            Write-LogMessage "Downloading $($dependencyUrl | Split-Path -Leaf)" "Verbose"; $dependencyPath = Join-Path $tempDir "dependency.appx"
+            Invoke-WebRequest -Uri $dependencyUrl -OutFile $dependencyPath -UseBasicParsing
+            
+            Write-LogMessage "Installing dependency..." "Info"; Add-AppxPackage -Path $dependencyPath
+            Write-LogMessage "Installing Winget..." "Info"; Add-AppxPackage -Path $wingetPath
+
+            if (Get-Command winget -ErrorAction SilentlyContinue) {
+                Write-LogMessage "Winget was installed successfully." "Success"
+                $global:PackageManagerPreference = "winget"
+                return "winget"
+            } else { throw "Winget command is still not available after installation." }
+        } catch {
+            Write-LogMessage "Failed to automatically install Winget. Error: $($_.Exception.Message)" "Error"
+        } finally {
+            if (Test-Path $tempDir) { Remove-Item -Path $tempDir -Recurse -Force }
+        }
+    }
+
+    Write-LogMessage "No package manager could be configured." "Error"
+    return $null
 }
 
-function Install-AppBundle {
+function global:Install-AppBundle {
     param(
         [string[]]$WingetIds,
         [string[]]$ChocoIds
@@ -621,6 +693,63 @@ function Remove-AppxPackageSafe {
     } catch {
         Write-LogMessage "Failed to remove package ${PackageName}: $($_.Exception.Message)" "Warning"
         return $false
+    }
+}
+
+function Load-ApplicationManifest {
+    param(
+        [string]$Path = (Join-Path $PSScriptRoot "apps.json")
+    )
+
+    Write-LogMessage "Loading application manifest from: $Path" "Verbose"
+    if (-not (Test-Path $Path)) {
+        Write-LogMessage "Application manifest 'apps.json' not found at '$Path'. No applications will be available for installation." "Warning"
+        return $null
+    }
+
+    try {
+        $manifest = Get-Content -Path $Path -Raw | ConvertFrom-Json -ErrorAction Stop
+        Write-LogMessage "Application manifest loaded successfully." "Success"
+        return $manifest
+    } catch {
+        Write-LogMessage "Failed to load or parse 'apps.json': $($_.Exception.Message)" "Error"
+        return $null
+    }
+}
+
+function Register-ApplicationFeaturesFromManifest {
+    param(
+        [Parameter(Mandatory)] $AppManifest
+    )
+
+    if (-not $AppManifest) { return }
+
+    $bundles = $AppManifest.PSObject.Properties | ForEach-Object { $_.Name }
+
+    foreach ($bundleName in $bundles) {
+        $bundle = $AppManifest.$bundleName
+        $featureKey = "Apps.Install_$($bundleName)"
+
+        # Use displayName if provided, otherwise generate a name from the key
+        $displayName = if ($bundle.displayName) { 
+            $bundle.displayName 
+        } else { 
+            ($bundleName -replace '([A-Z])', ' $1').Trim() 
+        }
+
+        $global:Features[$featureKey] = @{
+            Name           = "Install $displayName"
+            Category       = "Applications"
+            Description    = $bundle.description
+            Impact         = "Low"
+            RebootRequired = $false
+            Script         = {
+                $wingetIds = $bundle.apps.wingetId | Where-Object { $_ }
+                $chocoIds = $bundle.apps.chocoId | Where-Object { $_ }
+                Install-AppBundle -WingetIds $wingetIds -ChocoIds $chocoIds
+            }.GetNewClosure() # Use GetNewClosure() to capture the current state of $bundle
+        }
+        Write-LogMessage "Registered application bundle: $bundleName as '$displayName'" "Verbose"
     }
 }
 
@@ -1505,82 +1634,6 @@ $global:Features = @{
             netsh int tcp set global chimney=enabled
         }
     }
-    
-    # ==============================
-    # APPLICATIONS
-    # ==============================
-    
-    "Apps.InstallBrowsers" = @{
-        Name = "Install Modern Browsers"
-        Category = "Applications"
-        Description = "Install Chrome, Firefox, and Brave browsers"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("Google.Chrome", "Mozilla.Firefox", "Brave.Brave") `
-                            -ChocoIds @("googlechrome", "firefox", "brave")
-        }
-    }
-    
-    "Apps.InstallDevelopmentTools" = @{
-        Name = "Install Development Tools"
-        Category = "Applications"
-        Description = "Install VS Code, Git, Node.js, Python"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("Microsoft.VisualStudioCode", "Git.Git", "OpenJS.NodeJS", "Python.Python.3.12") `
-                            -ChocoIds @("vscode", "git", "nodejs", "python")
-        }
-    }
-    
-    "Apps.InstallProductivityTools" = @{
-        Name = "Install Productivity Tools"
-        Category = "Applications"
-        Description = "Install 7-Zip, Notepad++, Everything search"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("7zip.7zip", "Notepad++.Notepad++", "voidtools.Everything") `
-                            -ChocoIds @("7zip", "notepadplusplus", "everything")
-        }
-    }
-    
-    "Apps.InstallMediaTools" = @{
-        Name = "Install Media Tools"
-        Category = "Applications"
-        Description = "Install VLC, Audacity, OBS Studio"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("VideoLAN.VLC", "Audacity.Audacity", "OBSProject.OBSStudio") `
-                            -ChocoIds @("vlc", "audacity", "obs-studio")
-        }
-    }
-    
-    "Apps.InstallSecurityTools" = @{
-        Name = "Install Security Tools"
-        Category = "Applications"
-        Description = "Install security tools (Bitwarden, MalwareBytes)"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("Bitwarden.Bitwarden", "Malwarebytes.Malwarebytes") `
-                            -ChocoIds @("bitwarden", "malwarebytes")
-        }
-    }
-    
-    "Apps.InstallSystemTools" = @{
-        Name = "Install System Tools"
-        Category = "Applications"
-        Description = "Install system utilities (HWInfo, TreeSize, PowerToys)"
-        Impact = "Low"
-        RebootRequired = $false
-        Script = {
-            Install-AppBundle -WingetIds @("REALiX.HWiNFO", "JAMSoftware.TreeSize.Free", "Microsoft.PowerToys") `
-                            -ChocoIds @("hwinfo", "treesizefree", "powertoys")
-        }
-    }
 }
 
 # ============================================================================
@@ -1665,8 +1718,8 @@ $global:Profiles = @{
         Name = "Developer Workstation"
         Description = "Setup for development work"
         Features = @(
-            "Apps.InstallDevelopmentTools",
-            "Apps.InstallProductivityTools",
+            "Apps.Install_OutilsDeveloppement",
+            "Apps.Install_UtilitairesProductivite",
             "UI.ShowFileExtensions",
             "UI.ShowHiddenFiles",
             "UI.DarkMode",
@@ -1732,7 +1785,7 @@ function Show-MainMenu {
         Write-Host "4. Maintenance Mode (Backup/Restore)" -ForegroundColor White
         Write-Host "5. Export Current Configuration" -ForegroundColor White
         Write-Host "6. View Applied Features" -ForegroundColor White
-		Write-Host "  [I] Info & Help   [S] System Info   [L] View Log   [Q] Quit" -ForegroundColor Cyan
+		Write-Host "  [I] Info & Help    [S] System Info    [L] View Log    [Q] Quit" -ForegroundColor Cyan
         Write-Host "0. Exit" -ForegroundColor Gray
         
         $choice = Read-Host "`nSelect option"
@@ -1742,7 +1795,7 @@ function Show-MainMenu {
             "2" { Show-CustomMenu }
             "3" { Show-ProfileMenu }
             "4" { Show-MaintenanceMenu }
-            "5" { Export-CurrentConfiguration }
+            "5" { Export-CurrentConfiguration; Read-Host "Press Enter to continue" }
 			"I" { Show-Information }
             "S" { Show-SystemInfo }
             "L" { Show-LogFile }
@@ -1815,12 +1868,17 @@ function Show-CategoryMenu {
             foreach ($feature in $features) {
                 Execute-Feature -FeatureKey $feature.Key
             }
-            Write-Host "`nAll features applied!" -ForegroundColor Green
+            Write-Host "`nAll features in this category have been processed." -ForegroundColor Green
             Read-Host "Press Enter to continue"
         }
         elseif ($featureMap.ContainsKey([int]$choice)) {
-            Execute-Feature -FeatureKey $featureMap[[int]$choice]
-            Write-Host "`nFeature applied!" -ForegroundColor Green
+            $success = Execute-Feature -FeatureKey $featureMap[[int]$choice]
+            if ($success) {
+                Write-Host "`nFeature applied successfully!" -ForegroundColor Green
+            }
+            else {
+                Write-Host "`nFeature execution failed. Please check the log for errors." -ForegroundColor Red
+            }
             Read-Host "Press Enter to continue"
         }
         else {
@@ -1892,7 +1950,6 @@ function Show-MaintenanceMenu {
             }
             "3" { 
                 Show-SystemInfo
-                Read-Host "Press Enter to continue"
             }
             "4" {
                 Write-Host "Checking for Windows Updates..." -ForegroundColor Yellow
@@ -1908,7 +1965,8 @@ function Show-MaintenanceMenu {
             }
             "6" {
                 Write-Host "Running System File Checker..." -ForegroundColor Yellow
-                Start-Process -FilePath "sfc.exe" -ArgumentList "/scannow" -Wait -NoNewWindow
+                sfc.exe /scannow
+                Write-Host "System File Checker finished." -ForegroundColor Green
                 Read-Host "Press Enter to continue"
             }
             "0" { return }
@@ -1924,10 +1982,10 @@ function Show-AppliedFeatures {
     if ($global:AppliedFeatures.Count -eq 0) {
         Write-Host "No features have been applied yet." -ForegroundColor Gray
     } else {
-        foreach ($featureKey in $global:AppliedFeatures) {
+        foreach ($featureKey in ($global:AppliedFeatures | Sort-Object -Unique)) {
             $feature = $global:Features[$featureKey]
             if ($feature) {
-                Write-Host "• $($feature.Name)" -ForegroundColor Green
+                Write-Host "• $($feature.Name) ($($feature.Category))" -ForegroundColor Green
             }
         }
     }
@@ -1945,27 +2003,30 @@ function Show-Information {
 }
 
 function Show-SystemInfo {
-    Show-Banner
-    Write-Host "`n SYSTEM INFORMATION" -ForegroundColor Yellow
-    Write-Host " [1] Afficher le résumé rapide"
-    Write-Host " [2] Générer le RAPPORT DE SÉCURITÉ détaillé (Batch inclus)"
-    Write-Host " [3] Ouvrir le dossier probable des rapports (Bureau)"
-    Write-Host " [B] Retour"
-    $c = Read-Host "Choix"
-    switch ($c.ToUpper()) {
-        "1" {
-            $os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; $mem=Get-CimInstance Win32_ComputerSystem; $disk=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"; $gpu=Get-CimInstance Win32_VideoController
-            Write-Host "OS: $($os.Caption)  EditionID: $(Get-WindowsEditionId)  Version: $($os.Version)  Build: $($os.BuildNumber)  Arch: $($os.OSArchitecture)"
-            Write-Host "CPU: $($cpu.Name)  Cores: $($cpu.NumberOfCores)  Threads: $($cpu.NumberOfLogicalProcessors)"
-            Write-Host "RAM: $([math]::Round($mem.TotalPhysicalMemory/1GB,2)) GB"
-            if ($disk) { Write-Host "C:\  Total: $([math]::Round($disk.Size/1GB,2)) GB  Free: $([math]::Round($disk.FreeSpace/1GB,2)) GB" }
-            if ($gpu)  { Write-Host "GPU: $($gpu.Name)" }
-            Get-NetAdapter | Where-Object Status -eq "Up" | ForEach-Object { Write-Host "NIC: $($_.Name)  $($_.LinkSpeed)" }
-            Read-Host "Entrée pour continuer"
+    while($true) {
+        Show-Banner
+        Write-Host "`n SYSTEM INFORMATION" -ForegroundColor Yellow
+        Write-Host " [1] Afficher le résumé rapide"
+        Write-Host " [2] Générer le RAPPORT DE SÉCURITÉ détaillé (Batch inclus)"
+        Write-Host " [3] Ouvrir le dossier probable des rapports (Bureau)"
+        Write-Host " [B] Retour"
+        $c = Read-Host "Choix"
+        switch ($c.ToUpper()) {
+            "1" {
+                $os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; $mem=Get-CimInstance Win32_ComputerSystem; $disk=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"; $gpu=Get-CimInstance Win32_VideoController
+                Write-Host "OS: $($os.Caption)  EditionID: $(Get-WindowsEditionId)  Version: $($os.Version)  Build: $($os.BuildNumber)  Arch: $($os.OSArchitecture)"
+                Write-Host "CPU: $($cpu.Name)  Cores: $($cpu.NumberOfCores)  Threads: $($cpu.NumberOfLogicalProcessors)"
+                Write-Host "RAM: $([math]::Round($mem.TotalPhysicalMemory/1GB,2)) GB"
+                if ($disk) { Write-Host "C:\  Total: $([math]::Round($disk.Size/1GB,2)) GB  Free: $([math]::Round($disk.FreeSpace/1GB,2)) GB" }
+                if ($gpu)  { Write-Host "GPU: $($gpu.Name)" }
+                Get-NetAdapter | Where-Object Status -eq "Up" | ForEach-Object { Write-Host "NIC: $($_.Name)  $($_.LinkSpeed)" }
+                Read-Host "Entrée pour continuer"
+            }
+            "2" { Run-SecurityReportBatch; Read-Host "Batch terminé (voir Bureau). Entrée pour continuer" }
+            "3" { Start-Process -FilePath "$env:USERPROFILE\Desktop" }
+            "B" { return }
+            default { }
         }
-        "2" { Run-SecurityReportBatch; Read-Host "Batch terminé (voir Bureau). Entrée pour continuer" }
-        "3" { Start-Process -FilePath "$env:USERPROFILE\Desktop" }
-        default { }
     }
 }
 
@@ -2028,13 +2089,19 @@ function Execute-ExpressMode {
 if (-not (Test-Administrator)) {
     Write-Warning "This script requires Administrator privileges."
     Write-Warning "Please run PowerShell as Administrator and try again."
+    Read-Host "Press Enter to exit"
     exit 1
 }
 
 # Check Windows 11
 if (-not (Test-Windows11)) {
+    Read-Host "Press Enter to exit"
     exit 1
 }
+
+# Load and register application bundles from the JSON manifest
+$global:AppManifest = Load-ApplicationManifest
+Register-ApplicationFeaturesFromManifest -AppManifest $global:AppManifest
 
 # Initialize
 Show-Banner
@@ -2099,12 +2166,12 @@ elseif ($CustomMode -or (-not $Silent)) {
 # Final operations
 if ($global:AppliedFeatures.Count -gt 0) {
     Write-Host "`n" -NoNewline
-    Write-LogMessage "Configuration completed. $($global:AppliedFeatures.Count) features applied." "Success"
+    Write-LogMessage "Configuration completed. $($global:AppliedFeatures.Count) unique features applied." "Success"
     
     # Check if reboot is required
     $rebootRequired = $false
     foreach ($featureKey in $global:AppliedFeatures) {
-        if ($global:Features[$featureKey].RebootRequired) {
+        if ($global:Features.ContainsKey($featureKey) -and $global:Features[$featureKey].RebootRequired) {
             $rebootRequired = $true
             break
         }
@@ -2137,3 +2204,4 @@ Write-LogMessage "Log file saved to: $global:LogFile" "Info"
 try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
 
 Write-Host "`nConfiguration tool finished. Thank you for using Windows 11 Ultimate Configuration Tool!" -ForegroundColor Green
+Read-Host "Press Enter to exit"
