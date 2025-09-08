@@ -1,5 +1,5 @@
 # ============================================================================
-# WINDOWS 11 CONFIGURATION TOOL - VERSION 4.3 PATCHED COMPLETE
+# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - VERSION 4.3 PATCHED COMPLETE
 # Full Feature Set with All Optimizations, Privacy, Security & Tweaks
 # ============================================================================
 
