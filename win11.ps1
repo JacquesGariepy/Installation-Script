@@ -1,5 +1,5 @@
 # ============================================================================
-# WINDOWS 11 ULTIMATE CONFIGURATION TOOL - VERSION 4.3 PATCHED COMPLETE
+# WINDOWS 11 CONFIGURATION TOOL - VERSION 4.3 PATCHED COMPLETE
 # Full Feature Set with All Optimizations, Privacy, Security & Tweaks
 # ============================================================================
 
@@ -1732,6 +1732,7 @@ function Show-MainMenu {
         Write-Host "4. Maintenance Mode (Backup/Restore)" -ForegroundColor White
         Write-Host "5. Export Current Configuration" -ForegroundColor White
         Write-Host "6. View Applied Features" -ForegroundColor White
+		Write-Host "  [I] Info & Help   [S] System Info   [L] View Log   [Q] Quit" -ForegroundColor Cyan
         Write-Host "0. Exit" -ForegroundColor Gray
         
         $choice = Read-Host "`nSelect option"
@@ -1742,6 +1743,10 @@ function Show-MainMenu {
             "3" { Show-ProfileMenu }
             "4" { Show-MaintenanceMenu }
             "5" { Export-CurrentConfiguration }
+			"I" { Show-Information }
+            "S" { Show-SystemInfo }
+            "L" { Show-LogFile }
+            "Q" { Exit-Script }
             "6" { Show-AppliedFeatures }
             "0" { return }
             default { Write-Host "Invalid option!" -ForegroundColor Red }
@@ -1930,21 +1935,53 @@ function Show-AppliedFeatures {
     Read-Host "`nPress Enter to continue"
 }
 
+function Show-Information {
+    Show-Banner
+    Write-Host "`n - Privacy  - Security  - Performance  - Bloatware  - AI  - UI  - Network  - Dev  - Apps" -ForegroundColor White
+    Write-Host " - UTF-8 safe console/logs (évite €â€â€¦)" -ForegroundColor Green
+    Write-Host "Log: $($global:LogFile)" -ForegroundColor Cyan
+    Write-Host "Transcript: $($global:TranscriptFile)" -ForegroundColor Cyan
+    Read-Host "Entrée pour continuer"
+}
+
 function Show-SystemInfo {
-    $os = Get-CimInstance Win32_OperatingSystem
-    $cpu = Get-CimInstance Win32_Processor
-    $mem = Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum
-    
-    Write-Host "`n=== SYSTEM INFORMATION ===" -ForegroundColor Yellow
-    Write-Host "Computer Name: $env:COMPUTERNAME"
-    Write-Host "Username: $env:USERNAME"
-    Write-Host "OS: $($os.Caption)"
-    Write-Host "Version: $($os.Version)"
-    Write-Host "Build: $($os.BuildNumber)"
-    Write-Host "Architecture: $($os.OSArchitecture)"
-    Write-Host "CPU: $($cpu.Name)"
-    Write-Host "RAM: $([math]::Round($mem.Sum / 1GB, 2)) GB"
-    Write-Host "System Drive: $env:SystemDrive"
+    Show-Banner
+    Write-Host "`n SYSTEM INFORMATION" -ForegroundColor Yellow
+    Write-Host " [1] Afficher le résumé rapide"
+    Write-Host " [2] Générer le RAPPORT DE SÉCURITÉ détaillé (Batch inclus)"
+    Write-Host " [3] Ouvrir le dossier probable des rapports (Bureau)"
+    Write-Host " [B] Retour"
+    $c = Read-Host "Choix"
+    switch ($c.ToUpper()) {
+        "1" {
+            $os=Get-CimInstance Win32_OperatingSystem; $cpu=Get-CimInstance Win32_Processor; $mem=Get-CimInstance Win32_ComputerSystem; $disk=Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"; $gpu=Get-CimInstance Win32_VideoController
+            Write-Host "OS: $($os.Caption)  EditionID: $(Get-WindowsEditionId)  Version: $($os.Version)  Build: $($os.BuildNumber)  Arch: $($os.OSArchitecture)"
+            Write-Host "CPU: $($cpu.Name)  Cores: $($cpu.NumberOfCores)  Threads: $($cpu.NumberOfLogicalProcessors)"
+            Write-Host "RAM: $([math]::Round($mem.TotalPhysicalMemory/1GB,2)) GB"
+            if ($disk) { Write-Host "C:\  Total: $([math]::Round($disk.Size/1GB,2)) GB  Free: $([math]::Round($disk.FreeSpace/1GB,2)) GB" }
+            if ($gpu)  { Write-Host "GPU: $($gpu.Name)" }
+            Get-NetAdapter | Where-Object Status -eq "Up" | ForEach-Object { Write-Host "NIC: $($_.Name)  $($_.LinkSpeed)" }
+            Read-Host "Entrée pour continuer"
+        }
+        "2" { Run-SecurityReportBatch; Read-Host "Batch terminé (voir Bureau). Entrée pour continuer" }
+        "3" { Start-Process -FilePath "$env:USERPROFILE\Desktop" }
+        default { }
+    }
+}
+
+function Show-LogFile { if (Test-Path $global:LogFile) { notepad.exe $global:LogFile } else { Write-Host "Log not found." -ForegroundColor Yellow; Read-Host "Entrée…" } }
+
+function Exit-Script {
+    Write-Host "`nExiting..." -ForegroundColor Yellow
+    $rebootRequired = $false
+    foreach ($k in $global:AppliedFeatures) { if ($global:Features[$k].RebootRequired) { $rebootRequired=$true; break } }
+    if ($rebootRequired -and !$NoReboot) {
+        Write-Host "Some changes require reboot." -ForegroundColor Yellow
+        $c=Read-Host "Reboot now? (Y/N)"; if ($c -eq "Y"){ Write-LogMessage "User initiated reboot" "Info"; Restart-Computer -Force }
+    }
+    try { Stop-Transcript -ErrorAction SilentlyContinue } catch {}
+    Start-Sleep -Seconds 1
+    exit 0
 }
 
 function Execute-ExpressMode {
