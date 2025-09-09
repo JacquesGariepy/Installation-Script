@@ -501,108 +501,150 @@ function Execute-Feature {
     }
 }
 
-function global:Ensure-WingetOrChoco {
-    # Si le choix a déjà été fait, on ne redemande pas
-    if ($global:PackageManagerPreference) {
-        return $global:PackageManagerPreference
+function Install-Chocolatey {
+    try {
+        Write-LogMessage "Installing Chocolatey..." "Info"
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $wc = New-Object System.Net.WebClient
+        $wc.Headers.Add("User-Agent","Win11ConfigTool/4.4 (+powershell)")
+        $script = $wc.DownloadString("https://community.chocolatey.org/install.ps1")
+        iex $script
+        if (Get-Command choco -ErrorAction SilentlyContinue) {
+            Write-LogMessage "Chocolatey installed successfully." "Success"
+            return $true
+        } else {
+            throw "choco command not found after install."
+        }
+    } catch {
+        Write-LogMessage "Chocolatey install failed: $($_.Exception.Message)" "Error"
+        return $false
     }
+}
 
-    # Détecter les gestionnaires de paquets disponibles
-    $wingetAvailable = (Get-Command winget -ErrorAction SilentlyContinue)
-    $chocoAvailable = (Get-Command choco -ErrorAction SilentlyContinue)
+function global:Ensure-WingetOrChoco {
+    # Si déjà défini pour la session, retourner la préférence
+    if ($global:PackageManagerPreference) { return $global:PackageManagerPreference }
 
-    # Scénario 1 : Les deux sont disponibles, l'utilisateur choisit.
-    if ($wingetAvailable -and $chocoAvailable) {
-        Write-LogMessage "Both Winget and Chocolatey are available." "Info"
-        if ($global:Silent) {
-            Write-LogMessage "Silent mode: Defaulting to Winget." "Verbose"
+    # 1) Détection locale
+    $hasWinget = Get-Command winget -ErrorAction SilentlyContinue
+    $hasChoco  = Get-Command choco  -ErrorAction SilentlyContinue
+    if ($hasWinget -and $hasChoco) { $global:PackageManagerPreference = "winget"; return "winget" }
+    if ($hasWinget) { $global:PackageManagerPreference = "winget"; return "winget" }
+    if ($hasChoco)  { $global:PackageManagerPreference = "choco";  return "choco"  }
+
+    Write-LogMessage "No package manager found." "Important"
+
+    # 2) Tentative d’installation de Winget (Microsoft Store → offline GitHub)
+    try {
+        # a) Préparer environnement (TLS, Sideloading/Developer Mode)
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+        New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Appx" -Force | Out-Null
+        Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Appx" -Name "AllowAllTrustedApps" -Type DWord -Value 1
+
+        New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Force | Out-Null
+        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowAllTrustedApps" -Type DWord -Value 1
+        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 1
+
+        # b) Via Microsoft Store (officiel)
+        if (-not $global:Silent) {
+            Write-LogMessage "Opening Microsoft Store page for 'App Installer'… install/update it, then return here." "Info"
+            Start-Process "ms-windows-store://pdp/?ProductId=9NBLGGH4NNS1"
+            Read-Host "After installing/updating 'App Installer', press Enter to continue"
+        }
+
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            Write-LogMessage "Winget detected after Microsoft Store flow." "Success"
             $global:PackageManagerPreference = "winget"
             return "winget"
         }
-        $choice = Read-Host "Choose your preferred package manager for this session [W]inget (default) / [C]hocolatey"
-        if ($choice -eq 'c' -or $choice -eq 'C') {
-            Write-LogMessage "User chose Chocolatey for this session." "Info"
-            $global:PackageManagerPreference = "choco"
-            return "choco"
+
+        # c) Offline GitHub : VCLibs (aka.ms) + App Installer (.msixbundle)
+        Write-LogMessage "Attempting offline install of Winget from GitHub releases..." "Info"
+        $UA = @{ "User-Agent" = "Win11ConfigTool/4.4 (+powershell)" }
+
+        # Arch
+        $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+        $wantArch = if ($arch -match "ARM64") { "arm64" } else { "x64" }
+
+        # Dossier temp propre
+        $tempDir = Join-Path $env:TEMP "Winget-Install"
+        if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+        New-Item $tempDir -ItemType Directory | Out-Null
+
+        # Télécharger VCLibs UWP Desktop depuis aka.ms (lien Microsoft stable)
+        $vclibsUrl = if ($wantArch -eq "arm64") {
+            "https://aka.ms/Microsoft.VCLibs.140.00.UWPDesktop.arm64"
+        } else {
+            "https://aka.ms/Microsoft.VCLibs.140.00.UWPDesktop.x64"
         }
-        Write-LogMessage "User chose Winget for this session." "Info"
-        $global:PackageManagerPreference = "winget"
-        return "winget"
+        $vclibsPath = Join-Path $tempDir "Microsoft.VCLibs.140.00.UWPDesktop.$wantArch.appx"
+        Invoke-WebRequest -Uri $vclibsUrl -OutFile $vclibsPath -UseBasicParsing
+
+        # Vérif taille + signature (évite 0x8007000D)
+        if ((Get-Item $vclibsPath).Length -lt 500KB) { throw "Downloaded VCLibs looks too small (<500KB)." }
+        $sig = Get-AuthenticodeSignature $vclibsPath
+        if ($sig.Status -ne 'Valid') { throw "VCLibs signature invalid: $($sig.Status)" }
+
+        # Installer VCLibs avant App Installer
+        Write-LogMessage "Installing dependency VCLibs ($wantArch)..." "Info"
+        Add-AppxPackage -Path $vclibsPath -ErrorAction Stop
+
+        # Récupérer dernière release winget-cli
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -Headers $UA -ErrorAction Stop
+        $msix = $release.assets | Where-Object {
+            $_.name -match "DesktopAppInstaller.*\.msixbundle$" -or
+            $_.name -match "AppInstaller.*\.msixbundle$"      -or
+            $_.name -match "Microsoft\.DesktopAppInstaller_.*\.msixbundle$"
+        } | Select-Object -First 1
+        if (-not $msix) { throw "No .msixbundle found in latest winget-cli release." }
+
+        $msixPath = Join-Path $tempDir $msix.name
+        Invoke-WebRequest -Uri $msix.browser_download_url -OutFile $msixPath -UseBasicParsing -Headers $UA
+
+        if ((Get-Item $msixPath).Length -lt 2MB) { throw "Downloaded App Installer bundle looks too small (<2MB)." }
+        $sig2 = Get-AuthenticodeSignature $msixPath
+        if ($sig2.Status -ne 'Valid') { throw "App Installer signature invalid: $($sig2.Status)" }
+
+        Write-LogMessage "Installing App Installer (.msixbundle)..." "Info"
+        Add-AppxPackage -Path $msixPath -ErrorAction Stop
+
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            Write-LogMessage "Winget installed successfully (offline path)." "Success"
+            $global:PackageManagerPreference = "winget"
+            return "winget"
+        } else {
+            throw "Winget command not available after offline install."
+        }
+    } catch {
+        Write-LogMessage "Winget installation failed: $($_.Exception.Message)" "Error"
     }
 
-    # Scénario 2 : Seul Winget est disponible.
-    if ($wingetAvailable) {
-        Write-LogMessage "Only Winget is available. Using it as default." "Verbose"
-        $global:PackageManagerPreference = "winget"
-        return "winget"
-    }
-
-    # Scénario 3 : Seul Chocolatey est disponible.
-    if ($chocoAvailable) {
-        Write-LogMessage "Only Chocolatey is available. Using it as default." "Verbose"
-        $global:PackageManagerPreference = "choco"
-        return "choco"
-    }
-
-    # Scénario 4 : Aucun n'est disponible. On demande lequel installer.
-    Write-LogMessage "No package manager found." "Important"
-    $installChoice = 'w' # Winget par défaut
-    if (-not $global:Silent) {
-        $installChoice = Read-Host "Choose which package manager to install and use [W]inget (default) / [C]hocolatey"
-    }
-
-    # --- Tenter l'installation du choix de l'utilisateur ---
-
-    if ($installChoice -eq 'c' -or $installChoice -eq 'C') {
-        # Installation de Chocolatey
-        Write-LogMessage "Attempting to install Chocolatey..." "Info"
-        try {
-            Set-ExecutionPolicy Bypass -Scope Process -Force
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-            
-            if (Get-Command choco -ErrorAction SilentlyContinue) {
-                Write-LogMessage "Chocolatey installed successfully." "Success"
+    # 3) Fallback → Chocolatey (nécessite la fonction Install-Chocolatey définie ailleurs)
+    Write-LogMessage "Falling back to Chocolatey..." "Important"
+    try {
+        if (Get-Command Install-Chocolatey -ErrorAction SilentlyContinue) {
+            if (Install-Chocolatey) {
                 $global:PackageManagerPreference = "choco"
                 return "choco"
             }
-        } catch {
-            Write-LogMessage "Failed to install Chocolatey: $($_.Exception.Message)" "Error"
+        } else {
+            # Fallback inline si la fonction n'est pas définie
+            Write-LogMessage "Install-Chocolatey function not found — attempting inline install." "Warning"
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            $wc = New-Object System.Net.WebClient
+            $wc.Headers.Add("User-Agent","Win11ConfigTool/4.4 (+powershell)")
+            $script = $wc.DownloadString("https://community.chocolatey.org/install.ps1")
+            iex $script
+            if (Get-Command choco -ErrorAction SilentlyContinue) {
+                $global:PackageManagerPreference = "choco"
+                return "choco"
+            }
         }
-    } else {
-        # Installation de Winget (par défaut)
-        Write-LogMessage "Attempting to install Winget from official GitHub source..." "Info"
-        $tempDir = Join-Path $env:TEMP "Winget-Install"
-        try {
-            if (Test-Path $tempDir) { Remove-Item -Path $tempDir -Recurse -Force }
-            New-Item -Path $tempDir -ItemType Directory | Out-Null
-            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-cli/releases/latest" -UseBasicParsing
-            
-            # === CORRECTION ICI : Recherche plus spécifique des URLs ===
-            $wingetUrl = $release.assets.browser_download_url | Where-Object { $_.EndsWith(".msixbundle") } | Select-Object -First 1
-            $dependencyUrl = $release.assets.browser_download_url | Where-Object { $_.Contains("VCLibs") -and $_.Contains("x64") -and $_.EndsWith(".appx") } | Select-Object -First 1
-            # === FIN DE LA CORRECTION ===
-            
-            if (-not $wingetUrl -or -not $dependencyUrl) { throw "Could not find required package URLs in the latest GitHub release." }
-            
-            Write-LogMessage "Downloading $($wingetUrl | Split-Path -Leaf)" "Verbose"; $wingetPath = Join-Path $tempDir "winget.msixbundle"
-            Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetPath -UseBasicParsing
-            Write-LogMessage "Downloading $($dependencyUrl | Split-Path -Leaf)" "Verbose"; $dependencyPath = Join-Path $tempDir "dependency.appx"
-            Invoke-WebRequest -Uri $dependencyUrl -OutFile $dependencyPath -UseBasicParsing
-            
-            Write-LogMessage "Installing dependency..." "Info"; Add-AppxPackage -Path $dependencyPath
-            Write-LogMessage "Installing Winget..." "Info"; Add-AppxPackage -Path $wingetPath
-
-            if (Get-Command winget -ErrorAction SilentlyContinue) {
-                Write-LogMessage "Winget was installed successfully." "Success"
-                $global:PackageManagerPreference = "winget"
-                return "winget"
-            } else { throw "Winget command is still not available after installation." }
-        } catch {
-            Write-LogMessage "Failed to automatically install Winget. Error: $($_.Exception.Message)" "Error"
-        } finally {
-            if (Test-Path $tempDir) { Remove-Item -Path $tempDir -Recurse -Force }
-        }
+    } catch {
+        Write-LogMessage "Chocolatey install failed: $($_.Exception.Message)" "Error"
     }
 
     Write-LogMessage "No package manager could be configured." "Error"
@@ -617,7 +659,9 @@ function global:Install-AppBundle {
     $pm = Ensure-WingetOrChoco
     if (-not $pm) { 
         Write-LogMessage "No package manager (winget or Chocolatey) available. Cannot install apps." "Error"
-        return 
+        # === CORRECTION ICI : Générer une erreur pour arrêter l'exécution ===
+        throw "Package manager configuration failed."
+        # === FIN DE LA CORRECTION ===
     }
 
     if ($pm -eq "winget") {
