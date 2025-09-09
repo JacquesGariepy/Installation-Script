@@ -1666,18 +1666,41 @@ $global:Features = @{
     }
     
     "Network.OptimizeTCP" = @{
-        Name = "Optimize TCP Settings"
-        Category = "Network"
-        Description = "Optimize TCP settings for better performance"
-        Impact = "Low"
-        RebootRequired = $true
-        Script = {
-            Set-NetTCPSetting -SettingName InternetCustom -AutoTuningLevelLocal Normal -ErrorAction SilentlyContinue
-            Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Enabled -ReceiveSideScaling Enabled -ErrorAction SilentlyContinue
-            netsh int tcp set global autotuninglevel=normal
-            netsh int tcp set global chimney=enabled
-        }
-    }
+		Name           = "Optimize TCP Settings"
+		Category       = "Network"
+		Description    = "Optimize TCP settings for better performance"
+		Impact         = "Low"
+		RebootRequired = $true
+		Script         = {
+			try {
+				# Profil TCP personnalisé (basé sur 'Internet')
+				Set-NetTCPSetting -SettingName InternetCustom `
+					-AutoTuningLevelLocal Normal `
+					-EcnCapability Enabled `
+					-Timestamps Disabled `
+					-ErrorAction SilentlyContinue
+
+				# Activer offloads globaux
+				Set-NetOffloadGlobalSetting `
+					-ReceiveSegmentCoalescing Enabled `
+					-ReceiveSideScaling Enabled `
+					-ErrorAction SilentlyContinue
+
+				# Fallback avec netsh (pour compatibilité)
+				netsh int tcp set global autotuninglevel=normal
+				netsh int tcp set global ecncapability=enabled
+				netsh int tcp set global rsc=enabled
+				netsh int tcp set global rss=enabled
+				netsh int tcp set global timestamps=disabled
+
+				Write-Host "Optimisations TCP appliquées avec succès." -ForegroundColor Green
+			}
+			catch {
+				Write-Host "Échec de l'application des optimisations TCP : $($_.Exception.Message)" -ForegroundColor Yellow
+			}
+		}
+	}
+
 }
 
 # ============================================================================
