@@ -1,0 +1,28 @@
+<Configuration>
+  <!-- Partage de dossiers -->
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>C:\Scripts</HostFolder>
+      <SandboxFolder>C:\Scripts</SandboxFolder>
+      <ReadOnly>false</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  
+  <!-- Commande au démarrage -->
+  <LogonCommand>
+    <Command>cmd.exe /c start powershell -ExecutionPolicy Bypass -NoExit -Command "cd C:\Scripts; cls; Write-Host 'Ready to test win11.ps1 config' -ForegroundColor Cyan; Write-Host 'Run: .\win11.ps1' -ForegroundColor Yellow"</Command>
+  </LogonCommand>
+  
+  <!-- Ressources -->
+  <MemoryInMB>8192</MemoryInMB>
+  <vGPU>Enable</vGPU>
+  
+  <!-- Réseau (optionnel) -->
+  <Networking>Enable</Networking>
+  
+  <!-- Presse-papiers -->
+  <ClipboardRedirection>Enable</ClipboardRedirection>
+  
+  <!-- Imprimantes -->
+  <PrinterRedirection>Enable</PrinterRedirection>
+</Configuration>
