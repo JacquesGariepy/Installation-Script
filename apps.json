@@ -1,0 +1,92 @@
+{
+  "Navigateurs": {
+    "description": "Installer les navigateurs web modernes et populaires.",
+    "apps": [
+      {
+        "name": "Google Chrome",
+        "wingetId": "Google.Chrome",
+        "chocoId": "googlechrome"
+      },
+      {
+        "name": "Mozilla Firefox",
+        "wingetId": "Mozilla.Firefox",
+        "chocoId": "firefox"
+      },
+      {
+        "name": "Brave",
+        "wingetId": "Brave.Brave",
+        "chocoId": "brave"
+      }
+    ]
+  },
+  "OutilsDéveloppement": {
+    "description": "Installer VS Code, Git, Node.js et Python.",
+    "apps": [
+      {
+        "name": "Visual Studio Code",
+        "wingetId": "Microsoft.VisualStudioCode",
+        "chocoId": "vscode"
+      },
+      {
+        "name": "Git",
+        "wingetId": "Git.Git",
+        "chocoId": "git"
+      },
+      {
+        "name": "Node.js LTS",
+        "wingetId": "OpenJS.NodeJS.LTS",
+        "chocoId": "nodejs-lts"
+      },
+      {
+        "name": "Python 3",
+        "wingetId": "Python.Python.3",
+        "chocoId": "python"
+      }
+    ]
+  },
+  "UtilitairesProductivité": {
+    "description": "Installer 7-Zip, Notepad++, Everything et PowerToys.",
+    "apps": [
+      {
+        "name": "7-Zip",
+        "wingetId": "7zip.7zip",
+        "chocoId": "7zip"
+      },
+      {
+        "name": "Notepad++",
+        "wingetId": "Notepad++.Notepad++",
+        "chocoId": "notepadplusplus"
+      },
+      {
+        "name": "Everything",
+        "wingetId": "voidtools.Everything",
+        "chocoId": "everything"
+      },
+      {
+        "name": "Microsoft PowerToys",
+        "wingetId": "Microsoft.PowerToys",
+        "chocoId": "powertoys"
+      }
+    ]
+  },
+  "OutilsMédia": {
+    "description": "Installer VLC, Audacity et OBS Studio.",
+    "apps": [
+      {
+        "name": "VLC Media Player",
+        "wingetId": "VideoLAN.VLC",
+        "chocoId": "vlc"
+      },
+      {
+        "name": "Audacity",
+        "wingetId": "Audacity.Audacity",
+        "chocoId": "audacity"
+      },
+      {
+        "name": "OBS Studio",
+        "wingetId": "OBSProject.OBSStudio",
+        "chocoId": "obs-studio"
+      }
+    ]
+  }
+}
